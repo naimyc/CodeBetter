@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CodeBetter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="crt">
+      <div id="output"></div>
+      <div id="input-line" class="hidden"><span id="prompt"></span><span id="before"></span><span id="cursor"> </span><span id="after"></span></div>
+      <div id="busy" class="hidden"><span data-i18n="working"></span><span class="dots"></span></div>
+    </div>
+
+    <div id="editor" class="hidden">
+      <div class="ed-top">
+        <span class="ed-brand">▓▒░ CBEditor</span>
+        <span id="ed-name"></span>
+        <span id="ed-mod"></span>
+      </div>
+      <div class="ed-main">
+        <div class="ed-code">
+          <pre id="ed-gutter"></pre>
+          <textarea id="ed-text" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea>
+        </div>
+        <aside id="ed-panel">
+          <section class="pane">
+            <div id="p-task"></div>
+            <div id="p-part"></div>
+          </section>
+          <section class="pane" id="pane-learn">
+            <h2 class="pane-title" data-i18n="learn"></h2>
+            <pre id="p-lesson"></pre>
+          </section>
+          <section class="pane">
+            <h2 class="pane-title" data-i18n="yourTask"></h2>
+            <pre id="p-desc"></pre>
+          </section>
+          <section class="pane" id="pane-hints">
+            <h2 class="pane-title" id="p-hints-title"></h2>
+            <ol id="p-hints"></ol>
+            <div id="p-hints-more" class="d"></div>
+          </section>
+          <section class="pane" id="pane-check">
+            <h2 class="pane-title" data-i18n="checkHeader"></h2>
+            <pre id="p-check"></pre>
+          </section>
+        </aside>
+      </div>
+      <div id="ed-status"></div>
+      <div class="ed-keys">
+        <span data-key="save"><b>^S</b> <span data-i18n="save"></span></span>
+        <span><b>^X</b> <span data-i18n="exit"></span></span>
+        <span data-key="check"><b>F5</b> <span data-i18n="check"></span></span>
+        <span data-key="hint"><b>F2</b> <span data-i18n="hint"></span></span>
+        <span data-key="panel"><b>F1</b> <span data-i18n="panel"></span></span>
+        <span><b>Tab</b> <span data-i18n="indent"></span></span>
+        <span id="ed-pos"></span>
+      </div>
+    </div>
+
+    <script src="terminal.js"></script>
+    <script src="cbeditor.js"></script>
+  </body>
+</html>

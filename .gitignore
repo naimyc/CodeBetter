@@ -1,0 +1,15 @@
+# Rust / Tauri build output
+target/
+gen/schemas/
+dist/
+
+# Compiled binary of main.rs
+/main
+
+# Dependencies
+node_modules/
+
+# Editor / OS
+*.swp
+*~
+.DS_Store

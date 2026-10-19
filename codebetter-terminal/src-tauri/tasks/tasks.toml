@@ -1,0 +1,1357 @@
+# CodeBetter course catalog.
+#
+# Every task becomes a directory under ~/Tasks.cb/<id>/. Its parts are
+# lessons: each one first teaches a concept (`lesson`), then asks you to
+# extend the SAME program with it (`description`). Lesson N+1 only appears
+# once `submit` passed lesson N.
+#
+# A test feeds `input` to the program's stdin and compares stdout with
+# `expected` (trailing whitespace and trailing empty lines are ignored).
+# Hidden tests don't reveal their input when they fail.
+# `require` checks the source code (comments ignored, whitespace collapsed),
+# so a lesson about `mut` can't be passed without using `mut`.
+#
+# Text fields are either one string for all languages, or translated:
+#   title = { en = "Variables", de = "Variablen" }
+#   lesson.en = '''...'''
+#   lesson.de = '''...'''
+#
+# Reference solutions live in tasks/solutions/<id>/partN.rs and are
+# checked by `cargo test`.
+
+[[task]]
+id = "01_rust_basics"
+title = { en = "Rust Basics: CB Shop", de = "Rust-Grundlagen: CB Shop" }
+summary.en = "Learn Rust from zero. In 10 lessons you build one program: the till of a small shop."
+summary.de = "Rust von null an. In 10 Lektionen baust du ein Programm: die Kasse eines kleinen Ladens."
+starter_file = "main.rs"
+starter_code.en = '''
+// CB Shop: your till, written in Rust.
+// You'll extend this one program lesson by lesson.
+//
+// Read the lesson:        cat part1.md
+// or open the editor:     edit main.rs   (lesson + hints next to your code)
+
+fn main() {
+    // Lesson 1: print the heading here
+}
+'''
+starter_code.de = '''
+// CB Shop: deine Kasse, geschrieben in Rust.
+// Du erweiterst dieses eine Programm Lektion für Lektion.
+//
+// Lektion lesen:          cat part1.md
+// oder den Editor öffnen: edit main.rs   (Lektion + Tipps neben deinem Code)
+
+fn main() {
+    // Lektion 1: gib hier die Überschrift aus
+}
+'''
+
+# ------------------------------------------------------------------ lesson 1
+
+[[task.part]]
+title = { en = "Hello, Rust!", de = "Hallo, Rust!" }
+lesson.en = '''
+Every Rust program starts in the function main:
+
+    fn main() {
+        // your program runs here
+    }
+
+Everything between { and } belongs to main. To print text on the
+screen, use println! (the ! means it's a macro, not a normal
+function):
+
+    println!("Good morning!");
+
+Text goes inside "double quotes", and every statement ends with a
+semicolon ;
+
+Lines starting with // are comments. Rust ignores them; they are
+notes for humans.
+'''
+lesson.de = '''
+Jedes Rust-Programm startet in der Funktion main:
+
+    fn main() {
+        // hier läuft dein Programm
+    }
+
+Alles zwischen { und } gehört zu main. Um Text auf dem Bildschirm
+auszugeben, benutzt du println! (das ! bedeutet, dass es ein Makro
+ist und keine normale Funktion):
+
+    println!("Guten Morgen!");
+
+Text steht in "doppelten Anführungszeichen", und jede Anweisung
+endet mit einem Semikolon ;
+
+Zeilen, die mit // beginnen, sind Kommentare. Rust ignoriert sie,
+sie sind Notizen für Menschen.
+'''
+description.en = '''
+In this course you build the till of a small shop, step by step.
+Every lesson extends the same program in main.rs.
+
+Start with the heading of the till. Print exactly:
+
+    === CB Shop ===
+'''
+description.de = '''
+In diesem Kurs baust du Schritt für Schritt die Kasse eines kleinen
+Ladens. Jede Lektion erweitert dasselbe Programm in main.rs.
+
+Fang mit der Überschrift der Kasse an. Gib genau das aus:
+
+    === CB Shop ===
+'''
+hints = [
+    { en = "Write your println! between the { and } of main.", de = "Schreib dein println! zwischen { und } von main." },
+    { en = "Three = signs, a space, CB Shop, a space, three = signs. Every character counts.", de = "Drei =, ein Leerzeichen, CB Shop, ein Leerzeichen, drei =. Jedes Zeichen zählt." },
+]
+
+[[task.part.require]]
+code = "println!"
+message = { en = "Print the text with println!", de = "Gib den Text mit println! aus." }
+
+[[task.part.test]]
+expected = "=== CB Shop ==="
+
+# ------------------------------------------------------------------ lesson 2
+
+[[task.part]]
+title = { en = "Variables", de = "Variablen" }
+lesson.en = '''
+A variable is a name for a value. You create one with let:
+
+    let city = "Berlin";
+    let people = 3700000;
+
+To print a variable, put {} as a placeholder into the text. Rust
+fills in the values in order:
+
+    println!("{} has {} people", city, people);
+    // prints: Berlin has 3700000 people
+
+You can also write the name directly inside the braces:
+
+    println!("Welcome to {city}!");
+
+Rust usually figures out the type on its own: "Berlin" is text
+(&str), 3700000 is a whole number (i32).
+'''
+lesson.de = '''
+Eine Variable ist ein Name für einen Wert. Du legst sie mit let an:
+
+    let stadt = "Berlin";
+    let einwohner = 3700000;
+
+Um eine Variable auszugeben, schreibst du {} als Platzhalter in den
+Text. Rust setzt die Werte der Reihe nach ein:
+
+    println!("{} hat {} Einwohner", stadt, einwohner);
+    // Ausgabe: Berlin hat 3700000 Einwohner
+
+Du kannst den Namen auch direkt in die Klammern schreiben:
+
+    println!("Willkommen in {stadt}!");
+
+Den Typ erkennt Rust meistens selbst: "Berlin" ist Text (&str),
+3700000 ist eine ganze Zahl (i32).
+'''
+description.en = '''
+Our shop sells apples. Below the heading, create two variables:
+
+  * item   with the value "Apple"
+  * price  with the value 2
+
+and print them like this:
+
+    === CB Shop ===
+    Item: Apple
+    Price: 2 Euro
+'''
+description.de = '''
+Unser Laden verkauft Äpfel. Lege unter der Überschrift zwei
+Variablen an:
+
+  * artikel  mit dem Wert "Apfel"
+  * preis    mit dem Wert 2
+
+und gib sie so aus:
+
+    === CB Shop ===
+    Artikel: Apfel
+    Preis: 2 Euro
+'''
+hints = [
+    { en = "let item = \"Apple\"; creates the first variable.", de = "let artikel = \"Apfel\"; legt die erste Variable an." },
+    { en = "println!(\"Item: {item}\"); puts the value into the text.", de = "println!(\"Artikel: {artikel}\"); setzt den Wert in den Text ein." },
+]
+
+[[task.part.require]]
+code = "let "
+message = { en = "Store the values in variables with let.", de = "Speichere die Werte mit let in Variablen." }
+
+[[task.part.test]]
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 3
+
+[[task.part]]
+title = { en = "Maths and mut", de = "Rechnen und mut" }
+lesson.en = '''
+You can calculate with numbers:  +  -  *  /  (and % for the remainder)
+
+    let width = 4;
+    let height = 3;
+    let area = width * height;    // 12
+
+In Rust, variables can't be changed by default. This fails:
+
+    let points = 0;
+    points = 10;           // error: cannot assign twice
+
+If a value should change, mark the variable with mut:
+
+    let mut points = 0;
+    points = points + 10;
+    points += 5;           // short for points = points + 5
+    println!("{points}");  // 15
+
+Rust's error messages are very helpful. If something doesn't
+compile, read the message: it often tells you the fix.
+'''
+lesson.de = '''
+Mit Zahlen kannst du rechnen:  +  -  *  /  (und % für den Rest)
+
+    let breite = 4;
+    let hoehe = 3;
+    let flaeche = breite * hoehe;   // 12
+
+In Rust lassen sich Variablen standardmäßig nicht ändern. Das hier
+klappt nicht:
+
+    let punkte = 0;
+    punkte = 10;           // Fehler: cannot assign twice
+
+Soll sich ein Wert ändern, markierst du die Variable mit mut:
+
+    let mut punkte = 0;
+    punkte = punkte + 10;
+    punkte += 5;           // Kurzform für punkte = punkte + 5
+    println!("{punkte}");  // 15
+
+Die Fehlermeldungen von Rust sind sehr hilfreich. Wenn etwas nicht
+kompiliert, lies die Meldung: Oft steht die Lösung schon drin.
+'''
+description.en = '''
+A customer buys 3 apples. Create a variable quantity with the value
+3 and a mutable variable total that starts at 0. Then add
+price * quantity to total and print everything:
+
+    === CB Shop ===
+    Item: Apple
+    Price: 2 Euro
+    Quantity: 3
+    Total: 6 Euro
+'''
+description.de = '''
+Ein Kunde kauft 3 Äpfel. Lege eine Variable menge mit dem Wert 3 an
+und eine veränderliche Variable summe, die bei 0 startet. Addiere
+dann preis * menge zu summe und gib alles aus:
+
+    === CB Shop ===
+    Artikel: Apfel
+    Preis: 2 Euro
+    Menge: 3
+    Summe: 6 Euro
+'''
+hints = [
+    { en = "let mut total = 0; creates a variable you can change later.", de = "let mut summe = 0; legt eine Variable an, die du später ändern kannst." },
+    { en = "total += price * quantity; adds the product to total.", de = "summe += preis * menge; addiert das Produkt zur Summe." },
+]
+
+[[task.part.require]]
+code = "let mut "
+message = { en = "Make total changeable with let mut.", de = "Mach summe mit let mut veränderlich." }
+
+[[task.part.test]]
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 3
+Total: 6 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 3
+Summe: 6 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 4
+
+[[task.part]]
+title = { en = "Functions", de = "Funktionen" }
+lesson.en = '''
+A function gives a piece of code a name, so you can reuse it. You
+already know main. Your own functions go outside of main:
+
+    fn square(number: i32) -> i32 {
+        number * number
+    }
+
+  * number: i32   is a parameter: an input value with a type
+  * -> i32        is the return type
+  * The last line WITHOUT a semicolon is the return value.
+
+You can call it anywhere:
+
+    let result = square(5);    // 25
+
+Functions always need types. i32 is a whole number with a sign,
+u32 a whole number without a sign (only >= 0).
+'''
+lesson.de = '''
+Mit einer Funktion gibst du einem Stück Code einen Namen, damit du
+es wiederverwenden kannst. main kennst du schon. Eigene Funktionen
+schreibst du außerhalb von main:
+
+    fn quadrat(zahl: i32) -> i32 {
+        zahl * zahl
+    }
+
+  * zahl: i32   ist ein Parameter: ein Eingabewert mit Typ
+  * -> i32      ist der Rückgabetyp
+  * Die letzte Zeile OHNE Semikolon ist der Rückgabewert.
+
+Aufrufen kannst du sie überall:
+
+    let ergebnis = quadrat(5);   // 25
+
+Bei Funktionen musst du die Typen immer angeben. i32 ist eine ganze
+Zahl mit Vorzeichen, u32 eine ganze Zahl ohne Vorzeichen (nur >= 0).
+'''
+description.en = '''
+Write a function line_total that takes a price and a quantity (both
+u32) and returns their product. Use it in main to calculate the
+total.
+
+The output stays exactly as in lesson 3. You only restructure the
+code. That's called refactoring.
+'''
+description.de = '''
+Schreib eine Funktion gesamtpreis, die einen Preis und eine Menge
+bekommt (beide u32) und das Produkt zurückgibt. Benutze sie in main,
+um die Summe zu berechnen.
+
+Die Ausgabe bleibt genau wie in Lektion 3. Du baust nur den Code
+um. Das nennt man Refactoring.
+'''
+hints = [
+    { en = "fn line_total(price: u32, quantity: u32) -> u32 { ... } goes below main.", de = "fn gesamtpreis(preis: u32, menge: u32) -> u32 { ... } kommt unter main." },
+    { en = "The body is one line: price * quantity, without a semicolon.", de = "Der Rumpf ist eine Zeile: preis * menge, ohne Semikolon." },
+    { en = "In main: total += line_total(price, quantity);", de = "In main: summe += gesamtpreis(preis, menge);" },
+]
+
+[[task.part.require]]
+code = "->"
+message = { en = "Write a function that returns a value (fn name(...) -> u32).", de = "Schreib eine Funktion, die einen Wert zurückgibt (fn name(...) -> u32)." }
+
+[[task.part.test]]
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 3
+Total: 6 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 3
+Summe: 6 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 5
+
+[[task.part]]
+title = { en = "Reading input", de = "Eingaben lesen" }
+lesson.en = '''
+So far all values are fixed in the code. Now the customer should
+type in the quantity. You read one line from the keyboard (the
+standard input) like this:
+
+    use std::io;      // at the very top of the file
+
+    let mut input = String::new();        // empty, changeable text
+    io::stdin().read_line(&mut input).unwrap();
+
+Afterwards input contains e.g. "7\n", including the line break.
+To turn it into a number:
+
+    let number: u32 = input.trim().parse().unwrap();
+
+  * trim()     removes spaces and the line break
+  * parse()    turns text into a number; you choose the target
+               type with  : u32
+  * unwrap()   means "I'm sure this works". If it doesn't, the
+               program crashes. We'll fix that in a later lesson.
+
+You can test it with a file:
+    echo 5 > input.txt
+    run main.rs < input.txt
+'''
+lesson.de = '''
+Bisher stehen alle Werte fest im Code. Jetzt soll der Kunde die
+Menge eintippen. Eine Zeile von der Tastatur (der Standardeingabe)
+liest du so:
+
+    use std::io;      // ganz oben in die Datei
+
+    let mut eingabe = String::new();      // leerer, veränderlicher Text
+    io::stdin().read_line(&mut eingabe).unwrap();
+
+Danach steht in eingabe z. B. "7\n", inklusive Zeilenumbruch.
+So machst du daraus eine Zahl:
+
+    let zahl: u32 = eingabe.trim().parse().unwrap();
+
+  * trim()     entfernt Leerzeichen und den Zeilenumbruch
+  * parse()    wandelt Text in eine Zahl um; den Zieltyp gibst du
+               mit  : u32  an
+  * unwrap()   heißt "Ich bin sicher, dass das klappt". Klappt es
+               nicht, stürzt das Programm ab. Darum kümmern wir uns
+               in einer späteren Lektion.
+
+Testen kannst du das mit einer Datei:
+    echo 5 > eingabe.txt
+    run main.rs < eingabe.txt
+'''
+description.en = '''
+Read the quantity from the input instead of fixing it at 3.
+Everything else stays the same:
+
+    input:   5
+    output:  === CB Shop ===
+             Item: Apple
+             Price: 2 Euro
+             Quantity: 5
+             Total: 10 Euro
+'''
+description.de = '''
+Lies die Menge von der Eingabe, statt sie fest auf 3 zu setzen.
+Alles andere bleibt gleich:
+
+    Eingabe:  5
+    Ausgabe:  === CB Shop ===
+              Artikel: Apfel
+              Preis: 2 Euro
+              Menge: 5
+              Summe: 10 Euro
+'''
+hints = [
+    { en = "Don't forget use std::io; in the first line of the file.", de = "Vergiss nicht use std::io; in der ersten Zeile der Datei." },
+    { en = "Replace let quantity = 3; with the read_line + parse code from the lesson.", de = "Ersetze let menge = 3; durch den read_line- und parse-Code aus der Lektion." },
+    { en = "Without trim(), parse() fails because of the \\n at the end.", de = "Ohne trim() scheitert parse() am \\n am Ende." },
+]
+
+[[task.part.require]]
+code = "read_line"
+message = { en = "Read the quantity with read_line.", de = "Lies die Menge mit read_line ein." }
+
+[[task.part.test]]
+input = "3\n"
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 3
+Total: 6 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 3
+Summe: 6 Euro
+'''
+
+[[task.part.test]]
+input = "5\n"
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 5
+Total: 10 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 5
+Summe: 10 Euro
+'''
+
+[[task.part.test]]
+input = "12\n"
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 12
+Total: 24 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 12
+Summe: 24 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 6
+
+[[task.part]]
+title = { en = "Decisions with if", de = "Entscheidungen mit if" }
+lesson.en = '''
+With if your program decides which code runs:
+
+    let age = 17;
+    if age >= 18 {
+        println!("Welcome!");
+    } else {
+        println!("Sorry, too young.");
+    }
+
+Comparisons:  ==  equal         !=  not equal
+              <   less          >   greater
+              <=  less or equal >=  greater or equal
+
+More cases work with else if:
+
+    if grade == 1 { ... } else if grade <= 3 { ... } else { ... }
+
+if can also produce a value:
+
+    let text = if points > 50 { "won" } else { "lost" };
+'''
+lesson.de = '''
+Mit if entscheidet dein Programm, welcher Code läuft:
+
+    let alter = 17;
+    if alter >= 18 {
+        println!("Willkommen!");
+    } else {
+        println!("Leider zu jung.");
+    }
+
+Vergleiche:  ==  gleich          !=  ungleich
+             <   kleiner         >   größer
+             <=  kleiner gleich  >=  größer gleich
+
+Mehrere Fälle gehen mit else if:
+
+    if note == 1 { ... } else if note <= 3 { ... } else { ... }
+
+if kann auch einen Wert liefern:
+
+    let text = if punkte > 50 { "gewonnen" } else { "verloren" };
+'''
+description.en = '''
+From a total of 10 Euro on, customers get 1 Euro discount. After
+the total, print one of these lines, followed by the amount to pay:
+
+    input: 5                   input: 3
+    ...                        ...
+    Total: 10 Euro             Total: 6 Euro
+    Discount: 1 Euro           No discount
+    To pay: 9 Euro             To pay: 6 Euro
+'''
+description.de = '''
+Ab einer Summe von 10 Euro gibt es 1 Euro Rabatt. Gib nach der
+Summe eine dieser Zeilen aus und danach den Betrag, der zu zahlen
+ist:
+
+    Eingabe: 5                 Eingabe: 3
+    ...                        ...
+    Summe: 10 Euro             Summe: 6 Euro
+    Rabatt: 1 Euro             Kein Rabatt
+    Zu zahlen: 9 Euro          Zu zahlen: 6 Euro
+'''
+hints = [
+    { en = "if total >= 10 { ... } else { ... }", de = "if summe >= 10 { ... } else { ... }" },
+    { en = "Keep the discount in a variable: let discount = if total >= 10 { 1 } else { 0 };", de = "Merk dir den Rabatt in einer Variablen: let rabatt = if summe >= 10 { 1 } else { 0 };" },
+    { en = "To pay is total - discount.", de = "Zu zahlen ist summe - rabatt." },
+]
+
+[[task.part.require]]
+code = "if "
+message = { en = "Decide about the discount with if.", de = "Entscheide mit if über den Rabatt." }
+
+[[task.part.require]]
+code = "else"
+message = { en = "Handle the case without discount with else.", de = "Behandle den Fall ohne Rabatt mit else." }
+
+[[task.part.test]]
+input = "5\n"
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 5
+Total: 10 Euro
+Discount: 1 Euro
+To pay: 9 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 5
+Summe: 10 Euro
+Rabatt: 1 Euro
+Zu zahlen: 9 Euro
+'''
+
+[[task.part.test]]
+input = "3\n"
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 3
+Total: 6 Euro
+No discount
+To pay: 6 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 3
+Summe: 6 Euro
+Kein Rabatt
+Zu zahlen: 6 Euro
+'''
+
+[[task.part.test]]
+input = "4\n"
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Item: Apple
+Price: 2 Euro
+Quantity: 4
+Total: 8 Euro
+No discount
+To pay: 8 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Apfel
+Preis: 2 Euro
+Menge: 4
+Summe: 8 Euro
+Kein Rabatt
+Zu zahlen: 8 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 7
+
+[[task.part]]
+title = { en = "match", de = "match" }
+lesson.en = '''
+match compares a value with several patterns and runs the matching
+branch. Like an if with many cases, but tidier:
+
+    let day = "Sat";
+    let kind = match day {
+        "Sat" | "Sun" => "weekend",
+        "Mon" => "start of the week",
+        _ => "workday",          // _ matches everything else
+    };
+
+Rust checks that every possible value is covered. That's why text
+almost always needs the _ branch at the end.
+
+Functions can take text as &str:
+
+    fn greeting(language: &str) -> &str {
+        match language {
+            "de" => "Hallo",
+            _ => "Hello",
+        }
+    }
+'''
+lesson.de = '''
+match vergleicht einen Wert mit mehreren Mustern und führt den
+passenden Zweig aus. Wie ein if mit vielen Fällen, nur übersichtlicher:
+
+    let tag = "Sa";
+    let art = match tag {
+        "Sa" | "So" => "Wochenende",
+        "Mo" => "Wochenstart",
+        _ => "Werktag",          // _ passt auf alles andere
+    };
+
+Rust prüft, dass jeder mögliche Wert abgedeckt ist. Darum braucht
+man bei Text fast immer den Zweig _ am Ende.
+
+Funktionen können Text als &str bekommen:
+
+    fn begruessung(sprache: &str) -> &str {
+        match sprache {
+            "de" => "Hallo",
+            _ => "Hello",
+        }
+    }
+'''
+description.en = '''
+The shop now sells more than apples. The first input line is the
+item, the second one the quantity. Write a function
+price_of(item: &str) -> u32 that uses match:
+
+    Apple => 2     Bread => 3     Milk => 1     anything else => 0
+
+    input:   Bread
+             2
+    output:  === CB Shop ===
+             Item: Bread
+             Price: 3 Euro
+             Quantity: 2
+             Total: 6 Euro
+             No discount
+             To pay: 6 Euro
+'''
+description.de = '''
+Der Laden verkauft jetzt mehr als Äpfel. Die erste Zeile der Eingabe
+ist der Artikel, die zweite die Menge. Schreib eine Funktion
+preis_von(artikel: &str) -> u32, die match benutzt:
+
+    Apfel => 2     Brot => 3     Milch => 1     alles andere => 0
+
+    Eingabe:  Brot
+              2
+    Ausgabe:  === CB Shop ===
+              Artikel: Brot
+              Preis: 3 Euro
+              Menge: 2
+              Summe: 6 Euro
+              Kein Rabatt
+              Zu zahlen: 6 Euro
+'''
+hints = [
+    { en = "For the second line you need a second String and a second read_line call.", de = "Für die zweite Zeile brauchst du einen zweiten String und einen zweiten read_line-Aufruf." },
+    { en = "Use item.trim() when you call price_of, otherwise \"Bread\\n\" won't match \"Bread\".", de = "Nimm artikel.trim(), wenn du preis_von aufrufst, sonst passt \"Brot\\n\" nicht zu \"Brot\"." },
+    { en = "match item { \"Apple\" => 2, \"Bread\" => 3, \"Milk\" => 1, _ => 0 }", de = "match artikel { \"Apfel\" => 2, \"Brot\" => 3, \"Milch\" => 1, _ => 0 }" },
+]
+
+[[task.part.require]]
+code = "match "
+message = { en = "Look up the price with match.", de = "Such den Preis mit match heraus." }
+
+[[task.part.test]]
+input = { en = "Bread\n2\n", de = "Brot\n2\n" }
+expected.en = '''
+=== CB Shop ===
+Item: Bread
+Price: 3 Euro
+Quantity: 2
+Total: 6 Euro
+No discount
+To pay: 6 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Brot
+Preis: 3 Euro
+Menge: 2
+Summe: 6 Euro
+Kein Rabatt
+Zu zahlen: 6 Euro
+'''
+
+[[task.part.test]]
+input = { en = "Milk\n10\n", de = "Milch\n10\n" }
+expected.en = '''
+=== CB Shop ===
+Item: Milk
+Price: 1 Euro
+Quantity: 10
+Total: 10 Euro
+Discount: 1 Euro
+To pay: 9 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Milch
+Preis: 1 Euro
+Menge: 10
+Summe: 10 Euro
+Rabatt: 1 Euro
+Zu zahlen: 9 Euro
+'''
+
+[[task.part.test]]
+input = { en = "Chewing gum\n4\n", de = "Kaugummi\n4\n" }
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Item: Chewing gum
+Price: 0 Euro
+Quantity: 4
+Total: 0 Euro
+No discount
+To pay: 0 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Artikel: Kaugummi
+Preis: 0 Euro
+Menge: 4
+Summe: 0 Euro
+Kein Rabatt
+Zu zahlen: 0 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 8
+
+[[task.part]]
+title = { en = "Loops", de = "Schleifen" }
+lesson.en = '''
+A for loop repeats code for every element:
+
+    for i in 1..=3 {
+        println!("Round {i}");     // Round 1, Round 2, Round 3
+    }
+
+1..=3 is a range from 1 up to and including 3 (1..3 would stop
+before the 3).
+
+Going through all lines of the input:
+
+    for line in io::stdin().lines() {
+        let line = line.unwrap();
+        println!("read: {line}");
+    }
+
+Splitting a line into words:
+
+    let mut parts = line.split_whitespace();
+    let first = parts.next().unwrap();     // "Bread"
+    let second = parts.next().unwrap();    // "2"
+
+There's also  while condition { ... }  and  loop { ... }  (runs
+forever until break).
+'''
+lesson.de = '''
+Eine for-Schleife wiederholt Code für jedes Element:
+
+    for i in 1..=3 {
+        println!("Runde {i}");     // Runde 1, Runde 2, Runde 3
+    }
+
+1..=3 ist ein Bereich von 1 bis einschließlich 3 (1..3 würde vor
+der 3 aufhören).
+
+Alle Zeilen der Eingabe durchgehen:
+
+    for zeile in io::stdin().lines() {
+        let zeile = zeile.unwrap();
+        println!("gelesen: {zeile}");
+    }
+
+Eine Zeile in Wörter zerlegen:
+
+    let mut teile = zeile.split_whitespace();
+    let erstes = teile.next().unwrap();     // "Brot"
+    let zweites = teile.next().unwrap();    // "2"
+
+Außerdem gibt es  while bedingung { ... }  und  loop { ... }  (läuft
+endlos, bis break kommt).
+'''
+description.en = '''
+Now the customer buys several items. Every input line looks like
+Item Quantity. Print one line per item, and at the end the total
+with the discount as before:
+
+    input:   Bread 2
+             Apple 3
+    output:  === CB Shop ===
+             Bread x2 = 6 Euro
+             Apple x3 = 6 Euro
+             Total: 12 Euro
+             Discount: 1 Euro
+             To pay: 11 Euro
+
+Skip empty lines (line.trim().is_empty()). Your functions
+line_total and price_of are still useful here.
+'''
+description.de = '''
+Jetzt kauft der Kunde mehrere Artikel. Jede Zeile der Eingabe hat
+die Form  Artikel Menge. Gib für jeden Artikel eine Zeile aus und am
+Ende die Summe mit Rabatt wie bisher:
+
+    Eingabe:  Brot 2
+              Apfel 3
+    Ausgabe:  === CB Shop ===
+              Brot x2 = 6 Euro
+              Apfel x3 = 6 Euro
+              Summe: 12 Euro
+              Rabatt: 1 Euro
+              Zu zahlen: 11 Euro
+
+Leere Zeilen überspringst du (zeile.trim().is_empty()). Deine
+Funktionen gesamtpreis und preis_von kannst du weiter benutzen.
+'''
+hints = [
+    { en = "let mut total = 0; goes BEFORE the loop, total += ... inside it.", de = "let mut summe = 0; steht VOR der Schleife, summe += ... darin." },
+    { en = "if line.trim().is_empty() { continue; } skips to the next line.", de = "if zeile.trim().is_empty() { continue; } springt zur nächsten Zeile." },
+    { en = "The discount part from lesson 6 moves below the loop.", de = "Der Rabatt-Teil aus Lektion 6 wandert unter die Schleife." },
+]
+
+[[task.part.require]]
+code = "for "
+message = { en = "Go through the lines with a for loop.", de = "Geh die Zeilen mit einer for-Schleife durch." }
+
+[[task.part.test]]
+input = { en = "Bread 2\nApple 3\n", de = "Brot 2\nApfel 3\n" }
+expected.en = '''
+=== CB Shop ===
+Bread x2 = 6 Euro
+Apple x3 = 6 Euro
+Total: 12 Euro
+Discount: 1 Euro
+To pay: 11 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Brot x2 = 6 Euro
+Apfel x3 = 6 Euro
+Summe: 12 Euro
+Rabatt: 1 Euro
+Zu zahlen: 11 Euro
+'''
+
+[[task.part.test]]
+input = { en = "Milk 4\n", de = "Milch 4\n" }
+expected.en = '''
+=== CB Shop ===
+Milk x4 = 4 Euro
+Total: 4 Euro
+No discount
+To pay: 4 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Milch x4 = 4 Euro
+Summe: 4 Euro
+Kein Rabatt
+Zu zahlen: 4 Euro
+'''
+
+[[task.part.test]]
+input = { en = "Apple 1\n\nBread 1\n", de = "Apfel 1\n\nBrot 1\n" }
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Apple x1 = 2 Euro
+Bread x1 = 3 Euro
+Total: 5 Euro
+No discount
+To pay: 5 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Apfel x1 = 2 Euro
+Brot x1 = 3 Euro
+Summe: 5 Euro
+Kein Rabatt
+Zu zahlen: 5 Euro
+'''
+
+[[task.part.test]]
+input = ""
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Total: 0 Euro
+No discount
+To pay: 0 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Summe: 0 Euro
+Kein Rabatt
+Zu zahlen: 0 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 9
+
+[[task.part]]
+title = { en = "Structs and Vec", de = "Structs und Vec" }
+lesson.en = '''
+With struct you build your own data type out of several fields:
+
+    struct Book {
+        title: String,
+        pages: u32,
+    }
+
+    let b = Book { title: String::from("Momo"), pages: 304 };
+    println!("{} has {} pages", b.title, b.pages);
+
+String is text that the struct owns itself. You turn a &str into a
+String with String::from("...") or "...".to_string().
+
+A Vec is a list that can grow:
+
+    let mut shelf: Vec<Book> = Vec::new();
+    shelf.push(b);
+    println!("{} books", shelf.len());
+    for book in &shelf {
+        println!("{}", book.title);
+    }
+
+The & in  for book in &shelf  means: only look, don't take away.
+That way you can still use shelf afterwards.
+'''
+lesson.de = '''
+Mit struct baust du einen eigenen Datentyp aus mehreren Feldern:
+
+    struct Buch {
+        titel: String,
+        seiten: u32,
+    }
+
+    let b = Buch { titel: String::from("Momo"), seiten: 304 };
+    println!("{} hat {} Seiten", b.titel, b.seiten);
+
+String ist Text, der dem Struct selbst gehört. Aus einem &str wird
+ein String mit String::from("...") oder "...".to_string().
+
+Ein Vec ist eine Liste, die wachsen kann:
+
+    let mut regal: Vec<Buch> = Vec::new();
+    regal.push(b);
+    println!("{} Bücher", regal.len());
+    for buch in &regal {
+        println!("{}", buch.titel);
+    }
+
+Das & in  for buch in &regal  heißt: nur anschauen, nicht wegnehmen.
+So kannst du regal danach weiter benutzen.
+'''
+description.en = '''
+Create a struct Entry with the fields name (String), price (u32)
+and quantity (u32). First read ALL lines and store every entry in a
+Vec<Entry>. Then print the receipt, with a new line for the number
+of entries:
+
+    input:   Bread 2
+             Apple 3
+    output:  === CB Shop ===
+             Bread x2 = 6 Euro
+             Apple x3 = 6 Euro
+             Items: 2
+             Total: 12 Euro
+             Discount: 1 Euro
+             To pay: 11 Euro
+'''
+description.de = '''
+Lege ein struct Posten mit den Feldern name (String), preis (u32)
+und menge (u32) an. Lies zuerst ALLE Zeilen ein und speichere jeden
+Posten in einem Vec<Posten>. Gib danach den Bon aus, mit einer neuen
+Zeile für die Anzahl der Posten:
+
+    Eingabe:  Brot 2
+              Apfel 3
+    Ausgabe:  === CB Shop ===
+              Brot x2 = 6 Euro
+              Apfel x3 = 6 Euro
+              Posten: 2
+              Summe: 12 Euro
+              Rabatt: 1 Euro
+              Zu zahlen: 11 Euro
+'''
+hints = [
+    { en = "struct Entry { name: String, price: u32, quantity: u32 } goes outside of main.", de = "struct Posten { name: String, preis: u32, menge: u32 } steht außerhalb von main." },
+    { en = "In the input loop: entries.push(Entry { name: item.to_string(), price, quantity });", de = "In der Eingabe-Schleife: posten.push(Posten { name: artikel.to_string(), preis, menge });" },
+    { en = "A second loop  for e in &entries { ... }  prints the lines and adds up the total.", de = "Eine zweite Schleife  for p in &posten { ... }  gibt die Zeilen aus und rechnet die Summe." },
+]
+
+[[task.part.require]]
+code = "struct "
+message = { en = "Describe an entry with a struct.", de = "Beschreib einen Posten mit einem struct." }
+
+[[task.part.require]]
+code = "Vec"
+message = { en = "Collect the entries in a Vec.", de = "Sammle die Posten in einem Vec." }
+
+[[task.part.test]]
+input = { en = "Bread 2\nApple 3\n", de = "Brot 2\nApfel 3\n" }
+expected.en = '''
+=== CB Shop ===
+Bread x2 = 6 Euro
+Apple x3 = 6 Euro
+Items: 2
+Total: 12 Euro
+Discount: 1 Euro
+To pay: 11 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Brot x2 = 6 Euro
+Apfel x3 = 6 Euro
+Posten: 2
+Summe: 12 Euro
+Rabatt: 1 Euro
+Zu zahlen: 11 Euro
+'''
+
+[[task.part.test]]
+input = { en = "Milk 4\n", de = "Milch 4\n" }
+expected.en = '''
+=== CB Shop ===
+Milk x4 = 4 Euro
+Items: 1
+Total: 4 Euro
+No discount
+To pay: 4 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Milch x4 = 4 Euro
+Posten: 1
+Summe: 4 Euro
+Kein Rabatt
+Zu zahlen: 4 Euro
+'''
+
+[[task.part.test]]
+input = ""
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Items: 0
+Total: 0 Euro
+No discount
+To pay: 0 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Posten: 0
+Summe: 0 Euro
+Kein Rabatt
+Zu zahlen: 0 Euro
+'''
+
+# ----------------------------------------------------------------- lesson 10
+
+[[task.part]]
+title = { en = "Handling errors", de = "Fehler behandeln" }
+lesson.en = '''
+unwrap() crashes the program when something goes wrong. Real
+programs should handle errors instead.
+
+parse() returns a Result: either Ok(value) or Err(error). match
+handles both cases:
+
+    match "42".parse::<u32>() {
+        Ok(number) => println!("Number: {number}"),
+        Err(_) => println!("That wasn't a number"),
+    }
+
+For "maybe there is a value" Rust has Option: Some(value) or None.
+With it, a function can say "I don't know this one":
+
+    fn colour_code(colour: &str) -> Option<u32> {
+        match colour {
+            "red" => Some(1),
+            _ => None,
+        }
+    }
+
+    if let Some(code) = colour_code("red") { ... }
+
+And  continue  jumps straight to the next round of a loop.
+'''
+lesson.de = '''
+unwrap() lässt das Programm abstürzen, wenn etwas schiefgeht.
+Echte Programme sollten Fehler stattdessen behandeln.
+
+parse() gibt ein Result zurück: entweder Ok(wert) oder Err(fehler).
+Mit match behandelst du beide Fälle:
+
+    match "42".parse::<u32>() {
+        Ok(zahl) => println!("Zahl: {zahl}"),
+        Err(_) => println!("Das war keine Zahl"),
+    }
+
+Für "vielleicht gibt es einen Wert" hat Rust Option: Some(wert) oder
+None. Damit kann eine Funktion sagen "das kenne ich nicht":
+
+    fn farbcode(farbe: &str) -> Option<u32> {
+        match farbe {
+            "rot" => Some(1),
+            _ => None,
+        }
+    }
+
+    if let Some(code) = farbcode("rot") { ... }
+
+Und  continue  springt in einer Schleife direkt zur nächsten Runde.
+'''
+description.en = '''
+Make the till robust. It must never crash:
+
+  * unknown item           ->  Unknown item: Pizza
+  * quantity not a number  ->  Invalid quantity: two
+
+Print these messages right away while reading. Broken lines don't
+become entries. Change price_of so it returns Option<u32>.
+
+    input:   Bread 2
+             Pizza 1
+             Apple two
+    output:  === CB Shop ===
+             Unknown item: Pizza
+             Invalid quantity: two
+             Bread x2 = 6 Euro
+             Items: 1
+             Total: 6 Euro
+             No discount
+             To pay: 6 Euro
+'''
+description.de = '''
+Mach die Kasse robust. Sie darf nie abstürzen:
+
+  * unbekannter Artikel   ->  Unbekannter Artikel: Pizza
+  * Menge ist keine Zahl  ->  Ungültige Menge: zwei
+
+Gib diese Meldungen sofort beim Einlesen aus. Fehlerhafte Zeilen
+werden keine Posten. Ändere preis_von so, dass es Option<u32>
+zurückgibt.
+
+    Eingabe:  Brot 2
+              Pizza 1
+              Apfel zwei
+    Ausgabe:  === CB Shop ===
+              Unbekannter Artikel: Pizza
+              Ungültige Menge: zwei
+              Brot x2 = 6 Euro
+              Posten: 1
+              Summe: 6 Euro
+              Kein Rabatt
+              Zu zahlen: 6 Euro
+'''
+hints = [
+    { en = "price_of: \"Apple\" => Some(2), ..., _ => None", de = "preis_von: \"Apfel\" => Some(2), ..., _ => None" },
+    { en = "let Some(price) = price_of(item) else { println!(...); continue; };", de = "let Some(preis) = preis_von(artikel) else { println!(...); continue; };" },
+    { en = "Replace .parse().unwrap() with match quantity_text.parse::<u32>() { Ok(q) => q, Err(_) => { ...; continue; } }", de = "Ersetze .parse().unwrap() durch match menge_text.parse::<u32>() { Ok(m) => m, Err(_) => { ...; continue; } }" },
+]
+
+[[task.part.require]]
+code = "None"
+message = { en = "Let price_of return None for unknown items (Option).", de = "Lass preis_von für unbekannte Artikel None zurückgeben (Option)." }
+
+[[task.part.test]]
+input = { en = "Bread 2\nPizza 1\nApple two\n", de = "Brot 2\nPizza 1\nApfel zwei\n" }
+expected.en = '''
+=== CB Shop ===
+Unknown item: Pizza
+Invalid quantity: two
+Bread x2 = 6 Euro
+Items: 1
+Total: 6 Euro
+No discount
+To pay: 6 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Unbekannter Artikel: Pizza
+Ungültige Menge: zwei
+Brot x2 = 6 Euro
+Posten: 1
+Summe: 6 Euro
+Kein Rabatt
+Zu zahlen: 6 Euro
+'''
+
+[[task.part.test]]
+input = { en = "Milk 3\nMilk 7\n", de = "Milch 3\nMilch 7\n" }
+expected.en = '''
+=== CB Shop ===
+Milk x3 = 3 Euro
+Milk x7 = 7 Euro
+Items: 2
+Total: 10 Euro
+Discount: 1 Euro
+To pay: 9 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Milch x3 = 3 Euro
+Milch x7 = 7 Euro
+Posten: 2
+Summe: 10 Euro
+Rabatt: 1 Euro
+Zu zahlen: 9 Euro
+'''
+
+[[task.part.test]]
+input = "Caviar 1\n"
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Unknown item: Caviar
+Items: 0
+Total: 0 Euro
+No discount
+To pay: 0 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Unbekannter Artikel: Caviar
+Posten: 0
+Summe: 0 Euro
+Kein Rabatt
+Zu zahlen: 0 Euro
+'''
+
+[[task.part.test]]
+input = { en = "Apple -1\n", de = "Apfel -1\n" }
+hidden = true
+expected.en = '''
+=== CB Shop ===
+Invalid quantity: -1
+Items: 0
+Total: 0 Euro
+No discount
+To pay: 0 Euro
+'''
+expected.de = '''
+=== CB Shop ===
+Ungültige Menge: -1
+Posten: 0
+Summe: 0 Euro
+Kein Rabatt
+Zu zahlen: 0 Euro
+'''

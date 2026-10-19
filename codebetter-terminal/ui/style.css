@@ -1,0 +1,299 @@
+:root {
+  --bg: #040804;
+  --fg: #33ff66;
+  --fg-bright: #b8ffcc;
+  --fg-dim: #1c8c3e;
+  --glow: rgba(51, 255, 102, 0.55);
+  --glow-wide: rgba(51, 255, 102, 0.18);
+  --red: #ff5a4f;
+  --yellow: #ffc23a;
+  --blue: #5fd7ff;
+  --cyan: #7dffd8;
+  --magenta: #ff79d0;
+  --font: "VT323", "DejaVu Sans Mono", "Liberation Mono", monospace;
+  --size: 21px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+body {
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: var(--size);
+  line-height: 1.15;
+  text-shadow: 0 0 3px var(--glow), 0 0 14px var(--glow-wide);
+}
+
+/* ---- CRT effects ------------------------------------------------------- */
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* scanlines */
+body::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(0, 0, 0, 0.28) 3px,
+    transparent 4px
+  );
+  animation: flicker 0.12s infinite;
+}
+
+/* vignette + phosphor bloom */
+body::after {
+  background:
+    radial-gradient(ellipse at center, rgba(51, 255, 102, 0.05) 0%, transparent 60%),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+@keyframes flicker {
+  0% { opacity: 0.92; }
+  50% { opacity: 1; }
+  100% { opacity: 0.95; }
+}
+
+/* ---- terminal ---------------------------------------------------------- */
+
+#crt {
+  position: fixed;
+  inset: 0;
+  padding: 18px 26px 28px;
+  overflow-y: auto;
+  cursor: text;
+}
+
+#output,
+#input-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#cursor {
+  background: var(--fg);
+  color: var(--bg);
+  text-shadow: none;
+  box-shadow: 0 0 8px var(--glow);
+  animation: blink 1.06s step-end infinite;
+}
+
+.unfocused #cursor {
+  background: transparent;
+  color: inherit;
+  outline: 1px solid var(--fg);
+  animation: none;
+}
+
+@keyframes blink {
+  50% { background: transparent; color: inherit; box-shadow: none; }
+}
+
+.p-user { color: var(--fg-bright); font-weight: bold; }
+.p-path { color: var(--blue); }
+
+#busy { color: var(--fg-dim); }
+.dots::after {
+  content: "";
+  animation: dots 1.2s steps(4) infinite;
+}
+@keyframes dots {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
+}
+
+.hidden { display: none !important; }
+
+/* ANSI colours */
+.c0, .c8 { color: #4d6b55; }
+.c1, .c9 { color: var(--red); text-shadow: 0 0 4px rgba(255, 90, 79, 0.5); }
+.c2 { color: var(--fg); }
+.c10 { color: var(--fg-bright); }
+.c3, .c11 { color: var(--yellow); text-shadow: 0 0 4px rgba(255, 194, 58, 0.45); }
+.c4, .c12 { color: var(--blue); text-shadow: 0 0 4px rgba(95, 215, 255, 0.45); }
+.c5, .c13 { color: var(--magenta); }
+.c6, .c14 { color: var(--cyan); }
+.c7, .c15 { color: var(--fg-bright); }
+.b { font-weight: bold; filter: brightness(1.25); }
+.d { opacity: 0.6; }
+.u { text-decoration: underline; }
+
+::selection {
+  background: var(--fg);
+  color: var(--bg);
+  text-shadow: none;
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--fg-dim); border: 3px solid var(--bg); }
+
+/* ---- CBEditor ---------------------------------------------------------- */
+
+#editor {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  z-index: 10;
+}
+
+.ed-top,
+.ed-keys {
+  display: flex;
+  gap: 2em;
+  padding: 2px 14px;
+  background: var(--fg);
+  color: var(--bg);
+  text-shadow: none;
+  box-shadow: 0 0 12px var(--glow-wide);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ed-top { justify-content: space-between; }
+.ed-brand { font-weight: bold; letter-spacing: 1px; }
+.ed-keys b { background: var(--bg); color: var(--fg); padding: 0 4px; font-weight: normal; }
+.ed-keys [data-key] { cursor: pointer; }
+.ed-keys [data-key]:hover b { background: var(--fg-dim); }
+#ed-pos { margin-left: auto; }
+
+.ed-main {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.ed-code {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+
+#ed-gutter {
+  margin: 0;
+  padding: 8px 10px 8px 14px;
+  min-width: 3.5em;
+  text-align: right;
+  color: var(--fg-dim);
+  overflow: hidden;
+  user-select: none;
+  font: inherit;
+  line-height: inherit;
+}
+
+#ed-text {
+  flex: 1;
+  margin: 0;
+  padding: 8px 12px;
+  border: 0;
+  border-left: 1px dashed var(--fg-dim);
+  outline: none;
+  resize: none;
+  background: transparent;
+  color: var(--fg);
+  caret-color: var(--fg-bright);
+  font: inherit;
+  line-height: inherit;
+  text-shadow: inherit;
+  white-space: pre;
+  overflow: auto;
+  tab-size: 4;
+}
+
+/* lesson panel, attached to the right of the code */
+#ed-panel {
+  width: min(42%, 34em);
+  min-width: 18em;
+  overflow-y: auto;
+  border-left: 4px double var(--fg);
+  background: rgba(51, 255, 102, 0.035);
+  padding: 4px 14px 14px;
+}
+
+.no-panel #ed-panel { display: none; }
+#ed-panel.no-task #pane-hints,
+#ed-panel.no-task #pane-check { display: none; }
+
+.pane { margin-top: 10px; }
+
+.pane-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0 0 4px;
+  font: inherit;
+  font-weight: normal;
+  color: var(--yellow);
+  text-shadow: 0 0 4px rgba(255, 194, 58, 0.45);
+}
+
+.pane-title::before { content: "══"; }
+.pane-title::after {
+  content: "";
+  flex: 1;
+  border-top: 3px double currentColor;
+  opacity: 0.7;
+}
+
+#p-task { color: var(--fg-bright); font-weight: bold; }
+#p-lesson { color: var(--fg-bright); opacity: 0.85; }
+#p-part { color: var(--blue); margin-bottom: 6px; }
+
+#p-lesson,
+#p-desc,
+#p-check {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#p-check { font-size: 0.9em; }
+
+#p-hints {
+  margin: 0 0 4px;
+  padding-left: 1.6em;
+  color: var(--yellow);
+}
+
+#p-hints li { margin-bottom: 4px; }
+#p-hints li::marker { color: var(--fg-dim); }
+
+.flash { animation: flash 0.25s step-end 4; }
+@keyframes flash {
+  50% { background: var(--fg); color: var(--bg); text-shadow: none; }
+}
+
+#ed-status {
+  min-height: 1.15em;
+  padding: 0 14px;
+  text-align: center;
+  color: var(--fg-bright);
+}
+
+#ed-status.ask {
+  background: var(--yellow);
+  color: var(--bg);
+  text-shadow: none;
+}
