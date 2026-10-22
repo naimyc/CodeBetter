@@ -265,7 +265,8 @@ impl Editor {
 
     /// Answers "save modified buffer?".
     fn answer(&mut self, key: KeyEvent) -> Action {
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
+        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL)
+            && !key.modifiers.contains(KeyModifiers::ALT);
         match key.code {
             KeyCode::Char('y' | 'Y' | 'j' | 'J') if self.save() => return Action::Quit,
             KeyCode::Char('y' | 'Y' | 'j' | 'J') => return Action::Continue,
@@ -302,8 +303,10 @@ impl Editor {
         if self.asking {
             return self.answer(key);
         }
-        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL);
         let alt = key.modifiers.contains(KeyModifiers::ALT);
+        // Windows reports AltGr as Ctrl+Alt, and AltGr types text on many
+        // layouts (German: { } [ ] \ | @ ~), so Ctrl+Alt is never a shortcut.
+        let ctrl = key.modifiers.contains(KeyModifiers::CONTROL) && !alt;
         match key.code {
             KeyCode::Char('s') if ctrl => {
                 self.save();
@@ -444,4 +447,36 @@ fn main() -> io::Result<()> {
     let _ = out.flush();
     let _ = terminal::disable_raw_mode();
     result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn press(editor: &mut Editor, code: KeyCode, modifiers: KeyModifiers) -> Action {
+        editor.handle(KeyEvent::new(code, modifiers), 10)
+    }
+
+    #[test]
+    fn altgr_types_braces_like_on_windows() {
+        let mut editor = Editor::open("does-not-exist.rs".into(), None, Lang::De);
+        let altgr = KeyModifiers::CONTROL | KeyModifiers::ALT;
+        for c in ['{', '}', '[', ']', '\\', '|', '@', '~', 'q', 'x', 's'] {
+            press(&mut editor, KeyCode::Char(c), altgr);
+        }
+        assert_eq!(editor.lines, ["{}[]\\|@~qxs"]);
+        assert!(!editor.asking, "AltGr+q/x must not ask to exit");
+    }
+
+    #[test]
+    fn ctrl_shortcuts_still_work() {
+        let mut editor = Editor::open("does-not-exist.rs".into(), None, Lang::De);
+        press(&mut editor, KeyCode::Char('a'), KeyModifiers::NONE);
+        press(&mut editor, KeyCode::Char('x'), KeyModifiers::CONTROL);
+        assert!(editor.asking);
+        assert!(matches!(
+            press(&mut editor, KeyCode::Char('n'), KeyModifiers::NONE),
+            Action::Quit
+        ));
+    }
 }
