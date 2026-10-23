@@ -24,6 +24,8 @@ struct Catalog {
 struct Task {
     id: String,
     title: Text,
+    /// The file the course is written in, like `main.rs`.
+    starter_file: String,
     #[serde(rename = "part")]
     parts: Vec<Part>,
 }
@@ -86,6 +88,19 @@ impl Lesson {
             report: None,
             fresh: Fresh::Nothing,
         })
+    }
+
+    /// The first course written in the language of `path` (by extension),
+    /// so `cbeditor Main.java` opens the Java course.
+    pub fn course_for(path: &str) -> Option<String> {
+        let ext = |p: &str| Path::new(p).extension().map(|e| e.to_ascii_lowercase());
+        let want = ext(path)?;
+        let catalog: Catalog = toml::from_str(CATALOG).ok()?;
+        catalog
+            .tasks
+            .into_iter()
+            .find(|t| ext(&t.starter_file).as_ref() == Some(&want))
+            .map(|t| t.id)
     }
 
     fn current(&self) -> &Part {
@@ -380,36 +395,115 @@ mod tests {
         );
     }
 
-    /// Writes `code` to a scratch file and checks it against lesson `part`.
-    fn check_code(part: usize, code: &str, name: &str) -> (Lesson, bool) {
+    /// Writes `code` to a scratch file named like the course's starter file
+    /// and checks it against lesson `part`.
+    fn check_course(
+        task: Option<&str>,
+        part: usize,
+        lang: Lang,
+        code: &str,
+        name: &str,
+    ) -> (Lesson, bool) {
+        let mut lesson = Lesson::load(task, part, lang).unwrap();
         let dir = std::env::temp_dir().join(format!("cbeditor-test-{name}"));
         std::fs::create_dir_all(&dir).unwrap();
-        let file = dir.join("main.rs");
+        let file = dir.join(&lesson.task.starter_file);
         std::fs::write(&file, code).unwrap();
-        let mut lesson = Lesson::load(None, part, Lang::De).unwrap();
         let passed = lesson.check(&file);
         (lesson, passed)
     }
 
+    fn check_code(part: usize, code: &str, name: &str) -> (Lesson, bool) {
+        check_course(None, part, Lang::De, code, name)
+    }
+
+    /// The reference solutions are German; this translates what they print.
+    const TO_ENGLISH: &[(&str, &str)] = &[
+        ("Unbekannter Artikel", "Unknown item"),
+        ("Ungültige Menge", "Invalid quantity"),
+        ("Kein Rabatt", "No discount"),
+        ("Zu zahlen", "To pay"),
+        ("\"Artikel: ", "\"Item: "),
+        ("\"Preis: ", "\"Price: "),
+        ("\"Menge: ", "\"Quantity: "),
+        ("\"Summe: ", "\"Total: "),
+        ("\"Rabatt: ", "\"Discount: "),
+        ("\"Posten: ", "\"Items: "),
+        ("\"Apfel\"", "\"Apple\""),
+        ("\"Brot\"", "\"Bread\""),
+        ("\"Milch\"", "\"Milk\""),
+        ("CB Kino", "CB Cinema"),
+        ("\"Film: ", "\"Movie: "),
+        ("\"Alter: ", "\"Age: "),
+        ("CB Noten", "CB Grades"),
+        ("\"Punkte: ", "\"Points: "),
+        ("\"Note: ", "\"Grade: "),
+        (" Punkte, Note ", " points, grade "),
+        ("\"Durchschnitt: ", "\"Average: "),
+        (" Punkte\"", " points\""),
+        ("Achtung: Frost!", "Warning: frost!"),
+        ("Achtung: Hitze!", "Warning: heat!"),
+    ];
+
+    /// Every course's reference solutions pass their lessons in both
+    /// languages, and each pass unlocks the next lesson.
     #[test]
     fn reference_solutions_pass_and_unlock_the_next_lesson() {
-        let dir = concat!(
+        let solutions = concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../codebetter-terminal/src-tauri/tasks/solutions/01_rust_basics"
+            "/../codebetter-terminal/src-tauri/tasks/solutions"
         );
-        for part in 1..=10 {
-            let code = std::fs::read_to_string(format!("{dir}/part{part}.rs")).unwrap();
-            let (lesson, passed) = check_code(part, &code, &format!("part{part}"));
-            let report = texts(lesson.render(200, false)).join("\n");
-            assert!(passed, "lesson {part} failed:\n{report}");
-            assert_eq!(lesson.done, part == 10);
-            if part < 10 {
-                assert_eq!(
-                    lesson.part, part,
-                    "lesson {part} didn't unlock the next one"
-                );
+        let catalog: Catalog = toml::from_str(CATALOG).unwrap();
+        for task in &catalog.tasks {
+            let ext = Path::new(&task.starter_file)
+                .extension()
+                .unwrap()
+                .to_str()
+                .unwrap();
+            let total = task.parts.len();
+            for lang in [Lang::De, Lang::En] {
+                for part in 1..=total {
+                    let path = format!("{solutions}/{}/part{part}.{ext}", task.id);
+                    let mut code =
+                        std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("{path}: {e}"));
+                    if lang == Lang::En {
+                        for (de, en) in TO_ENGLISH {
+                            code = code.replace(de, en);
+                        }
+                    }
+                    let name = format!("{}-{}-{part}", task.id, lang.pick("en", "de"));
+                    let (lesson, passed) = check_course(Some(&task.id), part, lang, &code, &name);
+                    let report = texts(lesson.render(200, false)).join("\n");
+                    assert!(passed, "{} lesson {part} failed:\n{report}", task.id);
+                    assert_eq!(lesson.done, part == total);
+                    if part < total {
+                        assert_eq!(
+                            lesson.part, part,
+                            "{} lesson {part} didn't unlock the next one",
+                            task.id
+                        );
+                    }
+                }
             }
         }
+    }
+
+    #[test]
+    fn the_course_follows_the_file_type() {
+        assert_eq!(
+            Lesson::course_for("Main.java").as_deref(),
+            Some("02_java_basics")
+        );
+        assert_eq!(
+            Lesson::course_for("dir/main.py").as_deref(),
+            Some("03_python_basics")
+        );
+        assert_eq!(Lesson::course_for("main.c").as_deref(), Some("04_c_basics"));
+        assert_eq!(
+            Lesson::course_for("main.rs").as_deref(),
+            Some("01_rust_basics")
+        );
+        assert_eq!(Lesson::course_for("notes.txt"), None);
     }
 
     #[test]

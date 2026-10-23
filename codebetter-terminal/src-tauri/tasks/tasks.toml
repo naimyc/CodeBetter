@@ -16,8 +16,8 @@
 #   lesson.en = '''...'''
 #   lesson.de = '''...'''
 #
-# Reference solutions live in tasks/solutions/<id>/partN.rs and are
-# checked by `cargo test`.
+# Reference solutions live in tasks/solutions/<id>/partN.<ext> (the
+# extension of the starter file) and are checked by `cargo test`.
 
 [[task]]
 id = "01_rust_basics"
@@ -1354,4 +1354,1346 @@ Posten: 0
 Summe: 0 Euro
 Kein Rabatt
 Zu zahlen: 0 Euro
+'''
+
+# ================================================================== Java
+
+[[task]]
+id = "02_java_basics"
+title = { en = "Java Basics: CB Cinema", de = "Java-Grundlagen: CB Kino" }
+summary.en = "Java from zero. In 4 lessons you build the ticket desk of a small cinema."
+summary.de = "Java von null an. In 4 Lektionen baust du die Ticketkasse eines kleinen Kinos."
+starter_file = "Main.java"
+starter_code.en = '''
+// CB Cinema: the ticket desk of a small cinema, written in Java.
+// You'll extend this one program lesson by lesson.
+//
+// Read the lesson:        cat part1.md
+// or open the editor:     edit Main.java   (lesson + hints next to your code)
+
+public class Main {
+    public static void main(String[] args) {
+        // Lesson 1: print the heading here
+    }
+}
+'''
+starter_code.de = '''
+// CB Kino: die Ticketkasse eines kleinen Kinos, geschrieben in Java.
+// Du erweiterst dieses eine Programm Lektion für Lektion.
+//
+// Lektion lesen:          cat part1.md
+// oder den Editor öffnen: edit Main.java   (Lektion + Tipps neben deinem Code)
+
+public class Main {
+    public static void main(String[] args) {
+        // Lektion 1: gib hier die Überschrift aus
+    }
+}
+'''
+
+# ------------------------------------------------------------------ lesson 1
+
+[[task.part]]
+title = { en = "Hello, Java!", de = "Hallo, Java!" }
+lesson.en = '''
+In Java, all code lives inside a class. The file Main.java holds the
+class Main, and the program starts in its method main:
+
+    public class Main {
+        public static void main(String[] args) {
+            // your program runs here
+        }
+    }
+
+The class name and the file name must match: class Main belongs in
+Main.java. For now, take the line with public static void main as
+it is; you'll learn what each word means later.
+
+To print a line of text:
+
+    System.out.println("Good evening!");
+
+Text goes inside "double quotes", and every statement ends with a
+semicolon ;   Lines starting with // are comments.
+'''
+lesson.de = '''
+In Java steht aller Code in einer Klasse. Die Datei Main.java enthält
+die Klasse Main, und das Programm startet in ihrer Methode main:
+
+    public class Main {
+        public static void main(String[] args) {
+            // hier läuft dein Programm
+        }
+    }
+
+Klassenname und Dateiname müssen zusammenpassen: class Main gehört
+in Main.java. Die Zeile mit public static void main nimmst du erst
+einmal so hin; was jedes Wort bedeutet, lernst du später.
+
+Eine Zeile Text gibst du so aus:
+
+    System.out.println("Guten Abend!");
+
+Text steht in "doppelten Anführungszeichen", und jede Anweisung
+endet mit einem Semikolon ;   Zeilen mit // sind Kommentare.
+'''
+description.en = '''
+In this course you build the ticket desk of a small cinema. Every
+lesson extends the same program in Main.java.
+
+Start with the heading. Print exactly:
+
+    === CB Cinema ===
+'''
+description.de = '''
+In diesem Kurs baust du die Ticketkasse eines kleinen Kinos. Jede
+Lektion erweitert dasselbe Programm in Main.java.
+
+Fang mit der Überschrift an. Gib genau das aus:
+
+    === CB Kino ===
+'''
+hints = [
+    { en = "Write System.out.println(...); between the { and } of main.", de = "Schreib System.out.println(...); zwischen { und } von main." },
+    { en = "System starts with a capital S. Java cares about upper and lower case.", de = "System beginnt mit großem S. Java unterscheidet Groß- und Kleinschreibung." },
+]
+
+[[task.part.require]]
+code = "System.out.println"
+message = { en = "Print the text with System.out.println.", de = "Gib den Text mit System.out.println aus." }
+
+[[task.part.test]]
+expected = { en = "=== CB Cinema ===", de = "=== CB Kino ===" }
+
+# ------------------------------------------------------------------ lesson 2
+
+[[task.part]]
+title = { en = "Variables and types", de = "Variablen und Typen" }
+lesson.en = '''
+In Java, every variable has a type, written before its name:
+
+    String city = "Berlin";     // text
+    int people = 3700000;       // whole number
+    double price = 4.5;         // number with a decimal point
+
+You can't put text into an int: Java checks types before the
+program runs.
+
+The + operator joins text with other values:
+
+    System.out.println(city + " has " + people + " people");
+    // prints: Berlin has 3700000 people
+
+Mind the spaces inside the quotes, + doesn't add any.
+'''
+lesson.de = '''
+In Java hat jede Variable einen Typ, der vor ihrem Namen steht:
+
+    String stadt = "Berlin";    // Text
+    int einwohner = 3700000;    // ganze Zahl
+    double preis = 4.5;         // Zahl mit Komma (Punkt!)
+
+Text passt nicht in ein int: Java prüft die Typen, bevor das
+Programm läuft.
+
+Der Operator + hängt Text und andere Werte aneinander:
+
+    System.out.println(stadt + " hat " + einwohner + " Einwohner");
+    // gibt aus: Berlin hat 3700000 Einwohner
+
+Achte auf die Leerzeichen in den Anführungszeichen, + fügt keine ein.
+'''
+description.en = '''
+Tonight the cinema shows Matrix, and a ticket costs 9 Euro. Store the
+movie in a String variable film and the price in an int variable
+preis, then print them below the heading:
+
+    === CB Cinema ===
+    Movie: Matrix
+    Price: 9 Euro
+'''
+description.de = '''
+Heute Abend läuft Matrix, und ein Ticket kostet 9 Euro. Speichere den
+Film in einer String-Variable film und den Preis in einer
+int-Variable preis, und gib sie unter der Überschrift aus:
+
+    === CB Kino ===
+    Film: Matrix
+    Preis: 9 Euro
+'''
+hints = [
+    { en = "String film = \"Matrix\";  and  int preis = 9;", de = "String film = \"Matrix\";  und  int preis = 9;" },
+    { en = "\"Price: \" + preis + \" Euro\" builds the second line.", de = "\"Preis: \" + preis + \" Euro\" baut die zweite Zeile." },
+]
+
+[[task.part.require]]
+code = "String "
+message = { en = "Store the movie in a String variable.", de = "Speichere den Film in einer String-Variable." }
+
+[[task.part.require]]
+code = "int "
+message = { en = "Store the price in an int variable.", de = "Speichere den Preis in einer int-Variable." }
+
+[[task.part.test]]
+expected.en = '''
+=== CB Cinema ===
+Movie: Matrix
+Price: 9 Euro
+'''
+expected.de = '''
+=== CB Kino ===
+Film: Matrix
+Preis: 9 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 3
+
+[[task.part]]
+title = { en = "Input and if", de = "Eingaben und if" }
+lesson.en = '''
+A Scanner reads what the user types (the standard input):
+
+    import java.util.Scanner;     // at the very top of the file
+
+    Scanner scanner = new Scanner(System.in);
+    int number = scanner.nextInt();
+
+nextInt() reads the next whole number and skips spaces and line
+breaks before it.
+
+if runs code only when a condition is true, else otherwise:
+
+    if (number < 0) {
+        System.out.println("negative");
+    } else {
+        System.out.println("not negative");
+    }
+
+The condition goes in ( ). Comparisons: <  >  <=  >=  ==  !=
+'''
+lesson.de = '''
+Ein Scanner liest, was der Benutzer eintippt (die Standardeingabe):
+
+    import java.util.Scanner;     // ganz oben in die Datei
+
+    Scanner scanner = new Scanner(System.in);
+    int zahl = scanner.nextInt();
+
+nextInt() liest die nächste ganze Zahl und überspringt Leerzeichen
+und Zeilenumbrüche davor.
+
+if führt Code nur aus, wenn eine Bedingung wahr ist, sonst else:
+
+    if (zahl < 0) {
+        System.out.println("negativ");
+    } else {
+        System.out.println("nicht negativ");
+    }
+
+Die Bedingung steht in ( ). Vergleiche: <  >  <=  >=  ==  !=
+'''
+description.en = '''
+Children under 12 pay 5 Euro, everyone else 9 Euro. Read the age of
+the customer, print it, and print the right price:
+
+    input:   10
+    output:  === CB Cinema ===
+             Movie: Matrix
+             Age: 10
+             Price: 5 Euro
+'''
+description.de = '''
+Kinder unter 12 zahlen 5 Euro, alle anderen 9 Euro. Lies das Alter
+des Kunden ein, gib es aus und gib den richtigen Preis aus:
+
+    Eingabe:  10
+    Ausgabe:  === CB Kino ===
+              Film: Matrix
+              Alter: 10
+              Preis: 5 Euro
+'''
+hints = [
+    { en = "Don't forget import java.util.Scanner; above public class Main.", de = "Vergiss nicht import java.util.Scanner; über public class Main." },
+    { en = "Declare int preis; first, then set it inside if and else.", de = "Deklariere zuerst int preis; und setze ihn dann in if und else." },
+    { en = "12 is not under 12: use alter < 12, not alter <= 12.", de = "12 ist nicht unter 12: nimm alter < 12, nicht alter <= 12." },
+]
+
+[[task.part.require]]
+code = "Scanner"
+message = { en = "Read the age with a Scanner.", de = "Lies das Alter mit einem Scanner ein." }
+
+[[task.part.require]]
+code = "else"
+message = { en = "Choose the price with if and else.", de = "Wähle den Preis mit if und else." }
+
+[[task.part.test]]
+input = "10\n"
+expected.en = '''
+=== CB Cinema ===
+Movie: Matrix
+Age: 10
+Price: 5 Euro
+'''
+expected.de = '''
+=== CB Kino ===
+Film: Matrix
+Alter: 10
+Preis: 5 Euro
+'''
+
+[[task.part.test]]
+input = "30\n"
+expected.en = '''
+=== CB Cinema ===
+Movie: Matrix
+Age: 30
+Price: 9 Euro
+'''
+expected.de = '''
+=== CB Kino ===
+Film: Matrix
+Alter: 30
+Preis: 9 Euro
+'''
+
+[[task.part.test]]
+input = "12\n"
+hidden = true
+expected.en = '''
+=== CB Cinema ===
+Movie: Matrix
+Age: 12
+Price: 9 Euro
+'''
+expected.de = '''
+=== CB Kino ===
+Film: Matrix
+Alter: 12
+Preis: 9 Euro
+'''
+
+# ------------------------------------------------------------------ lesson 4
+
+[[task.part]]
+title = { en = "Methods and loops", de = "Methoden und Schleifen" }
+lesson.en = '''
+A method is a named piece of code. This one takes an int and gives
+back (returns) an int:
+
+    static int twice(int x) {
+        return x * 2;
+    }
+
+It goes inside class Main, next to main (not inside it). Call it
+like this:  int y = twice(4);   // y is 8
+
+A for loop repeats code. This one counts from 1 to n:
+
+    for (int i = 1; i <= n; i++) {
+        System.out.println("round " + i);
+    }
+
+  * int i = 1    runs once, before the loop
+  * i <= n       is checked before every round
+  * i++          runs after every round (adds 1 to i)
+'''
+lesson.de = '''
+Eine Methode ist ein Stück Code mit Namen. Diese hier bekommt ein int
+und gibt ein int zurück (return):
+
+    static int doppelt(int x) {
+        return x * 2;
+    }
+
+Sie steht in der Klasse Main neben main (nicht darin). Aufrufen
+kannst du sie so:  int y = doppelt(4);   // y ist 8
+
+Eine for-Schleife wiederholt Code. Diese zählt von 1 bis n:
+
+    for (int i = 1; i <= n; i++) {
+        System.out.println("Runde " + i);
+    }
+
+  * int i = 1    läuft einmal, vor der Schleife
+  * i <= n       wird vor jeder Runde geprüft
+  * i++          läuft nach jeder Runde (zählt i um 1 hoch)
+'''
+description.en = '''
+A family buys several tickets at once. Move the price rule into a
+method  static int preisFuer(int alter).  The input is first the
+number of tickets, then one age per ticket. Print each ticket and
+the total (the Age line goes away):
+
+    input:   2
+             10 30
+    output:  === CB Cinema ===
+             Movie: Matrix
+             Ticket 1: 5 Euro
+             Ticket 2: 9 Euro
+             Total: 14 Euro
+'''
+description.de = '''
+Eine Familie kauft mehrere Tickets auf einmal. Verschiebe die
+Preisregel in eine Methode  static int preisFuer(int alter).  Die
+Eingabe ist erst die Anzahl der Tickets, dann ein Alter pro Ticket.
+Gib jedes Ticket und die Summe aus (die Alter-Zeile fällt weg):
+
+    Eingabe:  2
+              10 30
+    Ausgabe:  === CB Kino ===
+              Film: Matrix
+              Ticket 1: 5 Euro
+              Ticket 2: 9 Euro
+              Summe: 14 Euro
+'''
+hints = [
+    { en = "Read the count first: int anzahl = scanner.nextInt(); then loop from 1 to anzahl.", de = "Lies zuerst die Anzahl: int anzahl = scanner.nextInt(); dann läuft die Schleife von 1 bis anzahl." },
+    { en = "Inside the loop: int preis = preisFuer(scanner.nextInt());", de = "In der Schleife: int preis = preisFuer(scanner.nextInt());" },
+    { en = "Start with int summe = 0; before the loop and add every price with summe += preis;", de = "Fang vor der Schleife mit int summe = 0; an und addiere jeden Preis mit summe += preis;" },
+]
+
+[[task.part.require]]
+code = "static int preisFuer"
+message = { en = "Write the method static int preisFuer(int alter).", de = "Schreib die Methode static int preisFuer(int alter)." }
+
+[[task.part.require]]
+code = "for"
+message = { en = "Go through the tickets with a for loop.", de = "Geh die Tickets mit einer for-Schleife durch." }
+
+[[task.part.test]]
+input = "2\n10 30\n"
+expected.en = '''
+=== CB Cinema ===
+Movie: Matrix
+Ticket 1: 5 Euro
+Ticket 2: 9 Euro
+Total: 14 Euro
+'''
+expected.de = '''
+=== CB Kino ===
+Film: Matrix
+Ticket 1: 5 Euro
+Ticket 2: 9 Euro
+Summe: 14 Euro
+'''
+
+[[task.part.test]]
+input = "3\n8 12 40\n"
+expected.en = '''
+=== CB Cinema ===
+Movie: Matrix
+Ticket 1: 5 Euro
+Ticket 2: 9 Euro
+Ticket 3: 9 Euro
+Total: 23 Euro
+'''
+expected.de = '''
+=== CB Kino ===
+Film: Matrix
+Ticket 1: 5 Euro
+Ticket 2: 9 Euro
+Ticket 3: 9 Euro
+Summe: 23 Euro
+'''
+
+[[task.part.test]]
+input = "0\n"
+hidden = true
+expected.en = '''
+=== CB Cinema ===
+Movie: Matrix
+Total: 0 Euro
+'''
+expected.de = '''
+=== CB Kino ===
+Film: Matrix
+Summe: 0 Euro
+'''
+
+# ================================================================== Python
+
+[[task]]
+id = "03_python_basics"
+title = { en = "Python Basics: CB Grades", de = "Python-Grundlagen: CB Noten" }
+summary.en = "Python from zero. In 4 lessons you build a grade calculator for tests."
+summary.de = "Python von null an. In 4 Lektionen baust du einen Notenrechner für Klassenarbeiten."
+starter_file = "main.py"
+starter_code.en = '''
+# CB Grades: a grade calculator, written in Python.
+# You'll extend this one program lesson by lesson.
+#
+# Read the lesson:        cat part1.md
+# or open the editor:     edit main.py   (lesson + hints next to your code)
+
+# Lesson 1: print the heading here
+'''
+starter_code.de = '''
+# CB Noten: ein Notenrechner, geschrieben in Python.
+# Du erweiterst dieses eine Programm Lektion für Lektion.
+#
+# Lektion lesen:          cat part1.md
+# oder den Editor öffnen: edit main.py   (Lektion + Tipps neben deinem Code)
+
+# Lektion 1: gib hier die Überschrift aus
+'''
+
+# ------------------------------------------------------------------ lesson 1
+
+[[task.part]]
+title = { en = "Hello, Python!", de = "Hallo, Python!" }
+lesson.en = '''
+A Python program runs from top to bottom, line by line. There is no
+main function you have to write first. To print a line:
+
+    print("Good morning!")
+
+Text goes inside "double" or 'single' quotes. Unlike Rust, Java or
+C, a statement ends at the end of the line: no semicolon needed.
+
+Lines starting with # are comments. Python ignores them.
+'''
+lesson.de = '''
+Ein Python-Programm läuft von oben nach unten, Zeile für Zeile. Es
+gibt keine main-Funktion, die du zuerst schreiben musst. Eine Zeile
+gibst du so aus:
+
+    print("Guten Morgen!")
+
+Text steht in "doppelten" oder 'einfachen' Anführungszeichen. Anders
+als in Rust, Java oder C endet eine Anweisung am Zeilenende: kein
+Semikolon nötig.
+
+Zeilen, die mit # beginnen, sind Kommentare. Python ignoriert sie.
+'''
+description.en = '''
+In this course you build a grade calculator. Every lesson extends
+the same program in main.py.
+
+Start with the heading. Print exactly:
+
+    === CB Grades ===
+'''
+description.de = '''
+In diesem Kurs baust du einen Notenrechner. Jede Lektion erweitert
+dasselbe Programm in main.py.
+
+Fang mit der Überschrift an. Gib genau das aus:
+
+    === CB Noten ===
+'''
+hints = [
+    { en = "One line is enough: print(\"...\")", de = "Eine Zeile reicht: print(\"...\")" },
+    { en = "Don't indent the line: in Python, spaces at the start of a line mean something.", de = "Rück die Zeile nicht ein: In Python haben Leerzeichen am Zeilenanfang eine Bedeutung." },
+]
+
+[[task.part.require]]
+code = "print("
+message = { en = "Print the text with print(...).", de = "Gib den Text mit print(...) aus." }
+
+[[task.part.test]]
+expected = { en = "=== CB Grades ===", de = "=== CB Noten ===" }
+
+# ------------------------------------------------------------------ lesson 2
+
+[[task.part]]
+title = { en = "Variables and f-strings", de = "Variablen und f-Strings" }
+lesson.en = '''
+A variable is created by giving it a value. No keyword, no type:
+
+    city = "Berlin"
+    people = 3700000
+
+Python remembers the type of the value itself (text, number, ...).
+
+To put values into text, use an f-string: an f before the quote,
+and the variable in { } inside the text:
+
+    print(f"{city} has {people} people")
+    # prints: Berlin has 3700000 people
+'''
+lesson.de = '''
+Eine Variable entsteht, indem du ihr einen Wert gibst. Kein
+Schlüsselwort, kein Typ:
+
+    stadt = "Berlin"
+    einwohner = 3700000
+
+Den Typ des Werts (Text, Zahl, ...) merkt sich Python selbst.
+
+Um Werte in Text einzusetzen, nimmst du einen f-String: ein f vor dem
+Anführungszeichen und die Variable in { } im Text:
+
+    print(f"{stadt} hat {einwohner} Einwohner")
+    # gibt aus: Berlin hat 3700000 Einwohner
+'''
+description.en = '''
+Mia wrote a test and got 42 points. Store her name in a variable
+name and her points in a variable punkte, then print them with
+f-strings below the heading:
+
+    === CB Grades ===
+    Name: Mia
+    Points: 42
+'''
+description.de = '''
+Mia hat eine Arbeit geschrieben und 42 Punkte bekommen. Speichere
+ihren Namen in einer Variable name und die Punkte in einer Variable
+punkte, und gib sie mit f-Strings unter der Überschrift aus:
+
+    === CB Noten ===
+    Name: Mia
+    Punkte: 42
+'''
+hints = [
+    { en = "name = \"Mia\"  and  punkte = 42", de = "name = \"Mia\"  und  punkte = 42" },
+    { en = "print(f\"Name: {name}\") prints the first line.", de = "print(f\"Name: {name}\") gibt die erste Zeile aus." },
+]
+
+[[task.part.require]]
+code = 'f"'
+message = { en = "Print the values with an f-string: f\"...\"", de = "Gib die Werte mit einem f-String aus: f\"...\"" }
+
+[[task.part.test]]
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Points: 42
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Punkte: 42
+'''
+
+# ------------------------------------------------------------------ lesson 3
+
+[[task.part]]
+title = { en = "Input and if/elif", de = "Eingaben und if/elif" }
+lesson.en = '''
+input() reads one line the user types, as text. int() turns it into
+a number:
+
+    number = int(input())
+
+if runs a block when its condition is true. elif ("else if") is
+checked only when everything before it was false, else when none
+was true:
+
+    if number > 0:
+        print("positive")
+    elif number == 0:
+        print("zero")
+    else:
+        print("negative")
+
+The colon : opens a block, and the block is everything indented
+below it (4 spaces). Comparisons: <  >  <=  >=  ==  !=
+'''
+lesson.de = '''
+input() liest eine Zeile, die der Benutzer eintippt, als Text. int()
+macht daraus eine Zahl:
+
+    zahl = int(input())
+
+if führt einen Block aus, wenn die Bedingung wahr ist. elif ("else
+if") wird nur geprüft, wenn alles davor falsch war, else, wenn
+nichts wahr war:
+
+    if zahl > 0:
+        print("positiv")
+    elif zahl == 0:
+        print("null")
+    else:
+        print("negativ")
+
+Der Doppelpunkt : öffnet einen Block, und der Block ist alles, was
+darunter eingerückt ist (4 Leerzeichen). Vergleiche: <  >  <=  >=  ==  !=
+'''
+description.en = '''
+Read the points from the input and work out the grade:
+
+    from 90 points: 1      from 60: 3      below 50: 5
+    from 75 points: 2      from 50: 4
+
+    input:   80
+    output:  === CB Grades ===
+             Name: Mia
+             Points: 80
+             Grade: 2
+'''
+description.de = '''
+Lies die Punkte von der Eingabe und berechne die Note:
+
+    ab 90 Punkten: 1      ab 60: 3      unter 50: 5
+    ab 75 Punkten: 2      ab 50: 4
+
+    Eingabe:  80
+    Ausgabe:  === CB Noten ===
+              Name: Mia
+              Punkte: 80
+              Note: 2
+'''
+hints = [
+    { en = "punkte = int(input()) replaces punkte = 42.", de = "punkte = int(input()) ersetzt punkte = 42." },
+    { en = "Check from the top: first >= 90, then >= 75, and so on. The first true branch wins.", de = "Prüf von oben: zuerst >= 90, dann >= 75 und so weiter. Der erste wahre Zweig gewinnt." },
+    { en = "\"from 50\" means 50 counts too: use >=, not >.", de = "\"ab 50\" heißt, 50 zählt mit: nimm >=, nicht >." },
+]
+
+[[task.part.require]]
+code = "input("
+message = { en = "Read the points with input().", de = "Lies die Punkte mit input() ein." }
+
+[[task.part.require]]
+code = "elif "
+message = { en = "Choose the grade with if, elif and else.", de = "Wähle die Note mit if, elif und else." }
+
+[[task.part.test]]
+input = "80\n"
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Points: 80
+Grade: 2
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Punkte: 80
+Note: 2
+'''
+
+[[task.part.test]]
+input = "95\n"
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Points: 95
+Grade: 1
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Punkte: 95
+Note: 1
+'''
+
+[[task.part.test]]
+input = "30\n"
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Points: 30
+Grade: 5
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Punkte: 30
+Note: 5
+'''
+
+[[task.part.test]]
+input = "50\n"
+hidden = true
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Points: 50
+Grade: 4
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Punkte: 50
+Note: 4
+'''
+
+# ------------------------------------------------------------------ lesson 4
+
+[[task.part]]
+title = { en = "Functions and loops", de = "Funktionen und Schleifen" }
+lesson.en = '''
+def defines a function. return gives a value back:
+
+    def twice(x):
+        return x * 2
+
+    print(twice(4))     # 8
+
+split() cuts a line into words, and a list comprehension turns each
+word into a number:
+
+    numbers = [int(w) for w in "3 5 8".split()]    # [3, 5, 8]
+
+for goes through a list. enumerate(list, 1) also counts, from 1:
+
+    for i, n in enumerate(numbers, 1):
+        print(f"{i}. {n}")
+
+sum(numbers) adds them up, len(numbers) counts them, and // divides
+without the part after the decimal point:  7 // 2  is 3.
+'''
+lesson.de = '''
+def definiert eine Funktion. return gibt einen Wert zurück:
+
+    def doppelt(x):
+        return x * 2
+
+    print(doppelt(4))   # 8
+
+split() zerlegt eine Zeile in Wörter, und eine List Comprehension
+macht aus jedem Wort eine Zahl:
+
+    zahlen = [int(w) for w in "3 5 8".split()]    # [3, 5, 8]
+
+for geht eine Liste durch. enumerate(liste, 1) zählt dabei mit, ab 1:
+
+    for i, z in enumerate(zahlen, 1):
+        print(f"{i}. {z}")
+
+sum(zahlen) addiert sie, len(zahlen) zählt sie, und // teilt ohne
+Nachkommastellen:  7 // 2  ist 3.
+'''
+description.en = '''
+Mia wrote several tests. Move the grade rule into a function
+def note(punkte)  that returns the grade. The input is one line
+with all points; print each test and the average (rounded down):
+
+    input:   80 95 40
+    output:  === CB Grades ===
+             Name: Mia
+             Test 1: 80 points, grade 2
+             Test 2: 95 points, grade 1
+             Test 3: 40 points, grade 5
+             Average: 71 points
+'''
+description.de = '''
+Mia hat mehrere Arbeiten geschrieben. Verschiebe die Notenregel in
+eine Funktion  def note(punkte),  die die Note zurückgibt. Die
+Eingabe ist eine Zeile mit allen Punkten; gib jede Arbeit und den
+Durchschnitt (abgerundet) aus:
+
+    Eingabe:  80 95 40
+    Ausgabe:  === CB Noten ===
+              Name: Mia
+              Test 1: 80 Punkte, Note 2
+              Test 2: 95 Punkte, Note 1
+              Test 3: 40 Punkte, Note 5
+              Durchschnitt: 71 Punkte
+'''
+hints = [
+    { en = "Inside the function, return the grade instead of storing it: return 1", de = "In der Funktion gibst du die Note zurück, statt sie zu speichern: return 1" },
+    { en = "alle = [int(p) for p in input().split()] reads all points at once.", de = "alle = [int(p) for p in input().split()] liest alle Punkte auf einmal." },
+    { en = "The average is sum(alle) // len(alle).", de = "Der Durchschnitt ist sum(alle) // len(alle)." },
+]
+
+[[task.part.require]]
+code = "def note("
+message = { en = "Write the function def note(punkte).", de = "Schreib die Funktion def note(punkte)." }
+
+[[task.part.require]]
+code = "for "
+message = { en = "Go through the points with a for loop.", de = "Geh die Punkte mit einer for-Schleife durch." }
+
+[[task.part.test]]
+input = "80 95 40\n"
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Test 1: 80 points, grade 2
+Test 2: 95 points, grade 1
+Test 3: 40 points, grade 5
+Average: 71 points
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Test 1: 80 Punkte, Note 2
+Test 2: 95 Punkte, Note 1
+Test 3: 40 Punkte, Note 5
+Durchschnitt: 71 Punkte
+'''
+
+[[task.part.test]]
+input = "100\n"
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Test 1: 100 points, grade 1
+Average: 100 points
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Test 1: 100 Punkte, Note 1
+Durchschnitt: 100 Punkte
+'''
+
+[[task.part.test]]
+input = "59 60\n"
+hidden = true
+expected.en = '''
+=== CB Grades ===
+Name: Mia
+Test 1: 59 points, grade 4
+Test 2: 60 points, grade 3
+Average: 59 points
+'''
+expected.de = '''
+=== CB Noten ===
+Name: Mia
+Test 1: 59 Punkte, Note 4
+Test 2: 60 Punkte, Note 3
+Durchschnitt: 59 Punkte
+'''
+
+# ================================================================== C
+
+[[task]]
+id = "04_c_basics"
+title = { en = "C Basics: CB Thermo", de = "C-Grundlagen: CB Thermo" }
+summary.en = "C from zero. In 4 lessons you build a thermometer that converts Celsius to Fahrenheit."
+summary.de = "C von null an. In 4 Lektionen baust du ein Thermometer, das Celsius in Fahrenheit umrechnet."
+starter_file = "main.c"
+starter_code.en = '''
+// CB Thermo: a thermometer, written in C.
+// You'll extend this one program lesson by lesson.
+//
+// Read the lesson:        cat part1.md
+// or open the editor:     edit main.c   (lesson + hints next to your code)
+
+#include <stdio.h>
+
+int main(void) {
+    // Lesson 1: print the heading here
+    return 0;
+}
+'''
+starter_code.de = '''
+// CB Thermo: ein Thermometer, geschrieben in C.
+// Du erweiterst dieses eine Programm Lektion für Lektion.
+//
+// Lektion lesen:          cat part1.md
+// oder den Editor öffnen: edit main.c   (Lektion + Tipps neben deinem Code)
+
+#include <stdio.h>
+
+int main(void) {
+    // Lektion 1: gib hier die Überschrift aus
+    return 0;
+}
+'''
+
+# ------------------------------------------------------------------ lesson 1
+
+[[task.part]]
+title = { en = "Hello, C!", de = "Hallo, C!" }
+lesson.en = '''
+Every C program starts in the function main:
+
+    #include <stdio.h>
+
+    int main(void) {
+        printf("Good morning!\n");
+        return 0;
+    }
+
+  * #include <stdio.h>   brings in printf (stdio = standard input/output)
+  * int main(void)       main takes nothing and returns a number
+  * return 0;            0 tells the system "everything went fine"
+
+printf does not end the line by itself: \n is the line break.
+Every statement ends with a semicolon ;
+'''
+lesson.de = '''
+Jedes C-Programm startet in der Funktion main:
+
+    #include <stdio.h>
+
+    int main(void) {
+        printf("Guten Morgen!\n");
+        return 0;
+    }
+
+  * #include <stdio.h>   holt printf dazu (stdio = Standard-Ein-/Ausgabe)
+  * int main(void)       main bekommt nichts und gibt eine Zahl zurück
+  * return 0;            0 sagt dem System "alles hat geklappt"
+
+printf beendet die Zeile nicht von selbst: \n ist der Zeilenumbruch.
+Jede Anweisung endet mit einem Semikolon ;
+'''
+description.en = '''
+In this course you build a thermometer. Every lesson extends the
+same program in main.c.
+
+Start with the heading. Print exactly:
+
+    === CB Thermo ===
+'''
+description.de = '''
+In diesem Kurs baust du ein Thermometer. Jede Lektion erweitert
+dasselbe Programm in main.c.
+
+Fang mit der Überschrift an. Gib genau das aus:
+
+    === CB Thermo ===
+'''
+hints = [
+    { en = "Write printf(\"...\\n\"); above return 0;", de = "Schreib printf(\"...\\n\"); über return 0;" },
+    { en = "Keep #include <stdio.h> at the top, without it printf is unknown.", de = "Lass #include <stdio.h> oben stehen, ohne es kennt C printf nicht." },
+]
+
+[[task.part.require]]
+code = "printf("
+message = { en = "Print the text with printf.", de = "Gib den Text mit printf aus." }
+
+[[task.part.test]]
+expected = "=== CB Thermo ==="
+
+# ------------------------------------------------------------------ lesson 2
+
+[[task.part]]
+title = { en = "Variables and maths", de = "Variablen und Rechnen" }
+lesson.en = '''
+In C, every variable has a type before its name:
+
+    int width = 7;          // whole number
+    int area = width * 3;   // 21
+
+Maths: +  -  *  /  and % (remainder). With int, / drops everything
+after the decimal point: 7 / 2 is 3. So the order matters:
+    7 * 9 / 5   is 63 / 5 = 12
+    7 / 5 * 9   is 1 * 9  = 9
+
+printf puts values into text with placeholders: %d for an int.
+
+    printf("Area: %d\n", area);    // Area: 21
+'''
+lesson.de = '''
+In C hat jede Variable einen Typ vor ihrem Namen:
+
+    int breite = 7;            // ganze Zahl
+    int flaeche = breite * 3;  // 21
+
+Rechnen: +  -  *  /  und % (Rest). Bei int fällt bei / alles nach
+dem Komma weg: 7 / 2 ist 3. Darum kommt es auf die Reihenfolge an:
+    7 * 9 / 5   ist 63 / 5 = 12
+    7 / 5 * 9   ist 1 * 9  = 9
+
+printf setzt Werte mit Platzhaltern in Text ein: %d für ein int.
+
+    printf("Fläche: %d\n", flaeche);    // Fläche: 21
+'''
+description.en = '''
+It is 20 degrees Celsius. Store that in an int variable celsius,
+convert it with  celsius * 9 / 5 + 32  and print both:
+
+    === CB Thermo ===
+    Celsius: 20
+    Fahrenheit: 68
+'''
+description.de = '''
+Es sind 20 Grad Celsius. Speichere das in einer int-Variable
+celsius, rechne es mit  celsius * 9 / 5 + 32  um und gib beides aus:
+
+    === CB Thermo ===
+    Celsius: 20
+    Fahrenheit: 68
+'''
+hints = [
+    { en = "int celsius = 20;  int fahrenheit = celsius * 9 / 5 + 32;", de = "int celsius = 20;  int fahrenheit = celsius * 9 / 5 + 32;" },
+    { en = "printf(\"Celsius: %d\\n\", celsius); prints the first line.", de = "printf(\"Celsius: %d\\n\", celsius); gibt die erste Zeile aus." },
+]
+
+[[task.part.require]]
+code = "int celsius"
+message = { en = "Store the temperature in an int variable celsius.", de = "Speichere die Temperatur in einer int-Variable celsius." }
+
+[[task.part.require]]
+code = "%d"
+message = { en = "Print the numbers with %d.", de = "Gib die Zahlen mit %d aus." }
+
+[[task.part.test]]
+expected = '''
+=== CB Thermo ===
+Celsius: 20
+Fahrenheit: 68
+'''
+
+# ------------------------------------------------------------------ lesson 3
+
+[[task.part]]
+title = { en = "scanf and if", de = "scanf und if" }
+lesson.en = '''
+scanf reads from the input. It needs to know where to store the
+number, so you give it the address of the variable with &:
+
+    int number;
+    scanf("%d", &number);
+
+if runs a block when its condition is true; else if and else follow
+when it wasn't:
+
+    if (number < 0) {
+        printf("negative\n");
+    } else if (number == 0) {
+        printf("zero\n");
+    } else {
+        printf("positive\n");
+    }
+
+Comparisons: <  >  <=  >=  ==  !=
+'''
+lesson.de = '''
+scanf liest von der Eingabe. Es muss wissen, wo die Zahl hin soll,
+also gibst du ihm mit & die Adresse der Variable:
+
+    int zahl;
+    scanf("%d", &zahl);
+
+if führt einen Block aus, wenn die Bedingung wahr ist; else if und
+else kommen dran, wenn sie es nicht war:
+
+    if (zahl < 0) {
+        printf("negativ\n");
+    } else if (zahl == 0) {
+        printf("null\n");
+    } else {
+        printf("positiv\n");
+    }
+
+Vergleiche: <  >  <=  >=  ==  !=
+'''
+description.en = '''
+Read the temperature in Celsius from the input. After the two lines
+from before, warn at 0 degrees or less and at 30 degrees or more:
+
+    0 or less:    Warning: frost!
+    30 or more:   Warning: heat!
+
+    input:   -5
+    output:  === CB Thermo ===
+             Celsius: -5
+             Fahrenheit: 23
+             Warning: frost!
+'''
+description.de = '''
+Lies die Temperatur in Celsius von der Eingabe. Warne nach den zwei
+Zeilen von vorher bei 0 Grad oder weniger und bei 30 Grad oder mehr:
+
+    0 oder weniger:   Achtung: Frost!
+    30 oder mehr:     Achtung: Hitze!
+
+    Eingabe:  -5
+    Ausgabe:  === CB Thermo ===
+              Celsius: -5
+              Fahrenheit: 23
+              Achtung: Frost!
+'''
+hints = [
+    { en = "int celsius;  scanf(\"%d\", &celsius);  replaces  int celsius = 20;", de = "int celsius;  scanf(\"%d\", &celsius);  ersetzt  int celsius = 20;" },
+    { en = "Forgot the & in front of celsius? Then scanf doesn't know where to write.", de = "Das & vor celsius vergessen? Dann weiß scanf nicht, wohin es schreiben soll." },
+    { en = "Between 1 and 29 degrees nothing extra is printed.", de = "Zwischen 1 und 29 Grad wird nichts zusätzlich ausgegeben." },
+]
+
+[[task.part.require]]
+code = "scanf("
+message = { en = "Read the temperature with scanf.", de = "Lies die Temperatur mit scanf ein." }
+
+[[task.part.require]]
+code = "else"
+message = { en = "Choose the warning with if and else if.", de = "Wähle die Warnung mit if und else if." }
+
+[[task.part.test]]
+input = "20\n"
+expected = '''
+=== CB Thermo ===
+Celsius: 20
+Fahrenheit: 68
+'''
+
+[[task.part.test]]
+input = "-5\n"
+expected.en = '''
+=== CB Thermo ===
+Celsius: -5
+Fahrenheit: 23
+Warning: frost!
+'''
+expected.de = '''
+=== CB Thermo ===
+Celsius: -5
+Fahrenheit: 23
+Achtung: Frost!
+'''
+
+[[task.part.test]]
+input = "35\n"
+expected.en = '''
+=== CB Thermo ===
+Celsius: 35
+Fahrenheit: 95
+Warning: heat!
+'''
+expected.de = '''
+=== CB Thermo ===
+Celsius: 35
+Fahrenheit: 95
+Achtung: Hitze!
+'''
+
+[[task.part.test]]
+input = "0\n"
+hidden = true
+expected.en = '''
+=== CB Thermo ===
+Celsius: 0
+Fahrenheit: 32
+Warning: frost!
+'''
+expected.de = '''
+=== CB Thermo ===
+Celsius: 0
+Fahrenheit: 32
+Achtung: Frost!
+'''
+
+[[task.part.test]]
+input = "30\n"
+hidden = true
+expected.en = '''
+=== CB Thermo ===
+Celsius: 30
+Fahrenheit: 86
+Warning: heat!
+'''
+expected.de = '''
+=== CB Thermo ===
+Celsius: 30
+Fahrenheit: 86
+Achtung: Hitze!
+'''
+
+# ------------------------------------------------------------------ lesson 4
+
+[[task.part]]
+title = { en = "Functions and loops", de = "Funktionen und Schleifen" }
+lesson.en = '''
+A function has a return type, a name and typed parameters:
+
+    int twice(int x) {
+        return x * 2;
+    }
+
+Write it above main, so C already knows it when main calls it:
+twice(4) is 8.
+
+A for loop repeats code:
+
+    for (int i = 0; i <= 20; i += 5) {
+        printf("%d\n", i);        // 0 5 10 15 20
+    }
+
+  * int i = 0    runs once, before the loop
+  * i <= 20      is checked before every round
+  * i += 5       runs after every round
+
+scanf reads several numbers at once:  scanf("%d %d", &a, &b);
+'''
+lesson.de = '''
+Eine Funktion hat einen Rückgabetyp, einen Namen und Parameter mit
+Typ:
+
+    int doppelt(int x) {
+        return x * 2;
+    }
+
+Schreib sie über main, damit C sie schon kennt, wenn main sie
+aufruft: doppelt(4) ist 8.
+
+Eine for-Schleife wiederholt Code:
+
+    for (int i = 0; i <= 20; i += 5) {
+        printf("%d\n", i);        // 0 5 10 15 20
+    }
+
+  * int i = 0    läuft einmal, vor der Schleife
+  * i <= 20      wird vor jeder Runde geprüft
+  * i += 5       läuft nach jeder Runde
+
+scanf liest mehrere Zahlen auf einmal:  scanf("%d %d", &a, &b);
+'''
+description.en = '''
+Turn the thermometer into a conversion table. Move the formula into
+a function  int fahrenheit(int celsius).  Read a start and an end
+temperature and print one line for every 10 degrees from start up to
+end (the old lines and warnings go away):
+
+    input:   0 30
+    output:  === CB Thermo ===
+             0 C = 32 F
+             10 C = 50 F
+             20 C = 68 F
+             30 C = 86 F
+'''
+description.de = '''
+Mach aus dem Thermometer eine Umrechnungstabelle. Verschiebe die
+Formel in eine Funktion  int fahrenheit(int celsius).  Lies eine
+Start- und eine Endtemperatur und gib für alle 10 Grad vom Start bis
+zum Ende eine Zeile aus (die alten Zeilen und Warnungen fallen weg):
+
+    Eingabe:  0 30
+    Ausgabe:  === CB Thermo ===
+              0 C = 32 F
+              10 C = 50 F
+              20 C = 68 F
+              30 C = 86 F
+'''
+hints = [
+    { en = "scanf(\"%d %d\", &von, &bis); reads both numbers.", de = "scanf(\"%d %d\", &von, &bis); liest beide Zahlen." },
+    { en = "for (int c = von; c <= bis; c += 10)", de = "for (int c = von; c <= bis; c += 10)" },
+    { en = "printf(\"%d C = %d F\\n\", c, fahrenheit(c)); prints one line.", de = "printf(\"%d C = %d F\\n\", c, fahrenheit(c)); gibt eine Zeile aus." },
+]
+
+[[task.part.require]]
+code = "int fahrenheit("
+message = { en = "Write the function int fahrenheit(int celsius).", de = "Schreib die Funktion int fahrenheit(int celsius)." }
+
+[[task.part.require]]
+code = "for"
+message = { en = "Print the table with a for loop.", de = "Gib die Tabelle mit einer for-Schleife aus." }
+
+[[task.part.test]]
+input = "0 30\n"
+expected = '''
+=== CB Thermo ===
+0 C = 32 F
+10 C = 50 F
+20 C = 68 F
+30 C = 86 F
+'''
+
+[[task.part.test]]
+input = "-20 10\n"
+expected = '''
+=== CB Thermo ===
+-20 C = -4 F
+-10 C = 14 F
+0 C = 32 F
+10 C = 50 F
+'''
+
+[[task.part.test]]
+input = "25 20\n"
+hidden = true
+expected = '''
+=== CB Thermo ===
+'''
+
+[[task.part.test]]
+input = "5 5\n"
+hidden = true
+expected = '''
+=== CB Thermo ===
+5 C = 41 F
 '''

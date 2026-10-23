@@ -109,7 +109,7 @@ Eine Zukunft, in der Entwickler KI als **Werkzeug** nutzen, weil sie ihr Handwer
 
 [`codebetter-terminal/`](codebetter-terminal/) ist der erste Prototyp: eine Desktop-App
 (Tauri + Rust) im Retro-Terminal-Stil mit einem Rust-Kurs in 10 Lektionen,
-dem Editor CBEditor und automatischen Tests. Start und Aufbau stehen in der
+Kursen für Java, Python und C, dem Editor CBEditor und automatischen Tests. Start und Aufbau stehen in der
 [README der App](codebetter-terminal/README.md).
 
 ## 11. Nächste Schritte

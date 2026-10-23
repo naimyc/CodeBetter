@@ -2,6 +2,8 @@
 
 use crossterm::style::Color;
 
+use crate::highlight::Kind;
+
 const fn rgb(hex: u32) -> Color {
     Color::Rgb {
         r: (hex >> 16) as u8,
@@ -17,6 +19,12 @@ pub const FG_DIM: Color = rgb(0x1c8c3e);
 pub const YELLOW: Color = rgb(0xffc23a);
 pub const RED: Color = rgb(0xff5a4f);
 pub const BLUE: Color = rgb(0x5fd7ff);
+pub const CYAN: Color = rgb(0x7dffd8);
+pub const MAGENTA: Color = rgb(0xff79d0);
+/// The line with the cursor: a slightly lighter BG.
+pub const CURRENT_LINE: Color = rgb(0x0a1a0c);
+/// Behind the bracket at the cursor and its partner.
+pub const MATCH_BG: Color = rgb(0x1f5c2e);
 /// The panel's faint green tint: rgba(51, 255, 102, 0.035) over BG.
 pub const PANEL_BG: Color = rgb(0x061107);
 /// The lesson text: FG_BRIGHT at 85% opacity on PANEL_BG.
@@ -25,7 +33,7 @@ pub const LESSON: Color = rgb(0x9ddbae);
 pub const NOTE: Color = rgb(0x21a040);
 
 /// Colors and weight for a run of text.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Paint {
     pub fg: Color,
     pub bg: Color,
@@ -46,7 +54,6 @@ impl Paint {
     }
 }
 
-pub const CODE: Paint = Paint::new(FG, BG);
 pub const GUTTER: Paint = Paint::new(FG_DIM, BG);
 /// The inverted top and bottom bars.
 pub const BAR: Paint = Paint::new(BG, FG);
@@ -58,3 +65,16 @@ pub const ASK: Paint = Paint::new(BG, YELLOW);
 pub const PANEL: Paint = Paint::new(FG, PANEL_BG);
 /// A line that just appeared, highlighted while it flashes.
 pub const FLASH: Paint = Paint::new(BG, FG);
+
+/// The color of code of `kind` on background `bg`.
+pub const fn code(kind: Kind, bg: Color) -> Paint {
+    match kind {
+        Kind::Text => Paint::new(FG, bg),
+        Kind::Keyword => Paint::new(FG_BRIGHT, bg).bold(),
+        Kind::Type => Paint::new(CYAN, bg),
+        Kind::Str => Paint::new(YELLOW, bg),
+        Kind::Number => Paint::new(MAGENTA, bg),
+        Kind::Comment => Paint::new(FG_DIM, bg),
+        Kind::Macro => Paint::new(BLUE, bg),
+    }
+}

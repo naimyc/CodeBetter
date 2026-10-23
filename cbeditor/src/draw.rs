@@ -18,6 +18,7 @@ use crossterm::queue;
 use crossterm::style::{Attribute, Print, SetAttribute, SetBackgroundColor, SetForegroundColor};
 use crossterm::terminal;
 
+use crate::highlight::Kind;
 use crate::lesson::Span;
 use crate::theme::{self, Paint};
 use crate::tr;
@@ -60,28 +61,49 @@ impl Editor {
         let text_w = code_w.saturating_sub(gutter_w).max(1);
         self.scroll(text_w, text_h);
 
+        let kinds = self.syntax.highlight_all(&self.lines);
+        let brackets = self.matching_brackets(&kinds);
+        // A bracket without a partner shows up red.
+        let bracket = if brackets.len() == 1 {
+            Paint::new(theme::BG, theme::RED).bold()
+        } else {
+            Paint::new(theme::FG_BRIGHT, theme::MATCH_BG).bold()
+        };
+
         queue!(out, Hide)?;
         self.draw_top_bar(out, w)?;
         for y in 0..text_h {
             queue!(out, MoveTo(0, (y + 1) as u16))?;
             let row = self.top + y;
-            let number = match self.lines.get(row) {
-                Some(_) => format!(" {:>digits$} ", row + 1),
-                None => " ".repeat(digits + 2),
+            let current = row == self.row;
+            let bg = if current {
+                theme::CURRENT_LINE
+            } else {
+                theme::BG
             };
-            let code: String = self.lines.get(row).map_or(String::new(), |line| {
-                line.chars().skip(self.left).take(text_w).collect()
-            });
-            put_line(
-                out,
-                &[
-                    (number, theme::GUTTER),
-                    ("┆ ".into(), theme::GUTTER),
-                    (code, theme::CODE),
-                ],
-                code_w,
-                theme::CODE,
-            )?;
+            let mut spans: Vec<Span> = match self.lines.get(row) {
+                Some(_) => {
+                    let number = Paint::new(if current { theme::FG } else { theme::FG_DIM }, bg);
+                    vec![(format!(" {:>digits$} ", row + 1), number)]
+                }
+                None => vec![(" ".repeat(digits + 2), theme::GUTTER)],
+            };
+            spans.push(("┆ ".into(), Paint::new(theme::FG_DIM, bg)));
+            if let Some(line) = self.lines.get(row) {
+                let chars = line.chars().enumerate().skip(self.left).take(text_w);
+                for (col, c) in chars {
+                    let paint = if brackets.contains(&(row, col)) {
+                        bracket
+                    } else {
+                        theme::code(kinds[row][col], bg)
+                    };
+                    match spans.last_mut() {
+                        Some((text, last)) if *last == paint => text.push(c),
+                        _ => spans.push((c.into(), paint)),
+                    }
+                }
+            }
+            put_line(out, &spans, code_w, Paint::new(theme::FG, bg))?;
             if panel_w > 0 {
                 put(out, "║ ", 2, Paint::new(theme::FG, theme::PANEL_BG))?;
                 let line = panel.get(self.panel_top + y).map_or(&[][..], |l| &l[..]);
@@ -137,6 +159,7 @@ impl Editor {
         let keys = [
             ("^S", lang.pick("Save", "Speichern")),
             ("^X", lang.pick("Exit", "Beenden")),
+            ("^Z", lang.pick("Undo", "Rückgängig")),
             ("F5", lang.pick("Check", "Prüfen")),
             ("F2", lang.pick("Hint", "Tipp")),
             ("F1", "Panel"),
@@ -158,6 +181,72 @@ impl Editor {
         queue!(out, MoveTo(0, y))?;
         put_line(out, &spans, w - pos_w, theme::BAR)?;
         put(out, &pos, pos_w, theme::BAR)
+    }
+
+    /// The bracket at (or just before) the cursor and its partner, as
+    /// (row, col). Brackets in strings and comments don't count.
+    fn matching_brackets(&self, kinds: &[Vec<Kind>]) -> Vec<(usize, usize)> {
+        const OPEN: &str = "([{";
+        const CLOSE: &str = ")]}";
+        let code = |row: usize, col: usize| {
+            let c = self.lines[row].chars().nth(col)?;
+            let plain = !matches!(kinds[row].get(col), Some(Kind::Str | Kind::Comment));
+            plain.then_some(c)
+        };
+        let is_bracket = |c: char| OPEN.contains(c) || CLOSE.contains(c);
+        let at = [Some(self.col), self.col.checked_sub(1)]
+            .into_iter()
+            .flatten()
+            .find_map(|col| {
+                code(self.row, col)
+                    .filter(|c| is_bracket(*c))
+                    .map(|c| (col, c))
+            });
+        let Some((col, c)) = at else {
+            return Vec::new();
+        };
+        let forward = OPEN.contains(c);
+        let (open, close) = if forward {
+            let i = OPEN.find(c).expect("is an opener");
+            (c, CLOSE.as_bytes()[i] as char)
+        } else {
+            let i = CLOSE.find(c).expect("is a closer");
+            (OPEN.as_bytes()[i] as char, c)
+        };
+        let (mut row, mut x, mut depth) = (self.row, col, 0usize);
+        loop {
+            match code(row, x) {
+                Some(ch) if ch == open || ch == close => {
+                    if (ch == open) == forward {
+                        depth += 1;
+                    } else {
+                        depth -= 1;
+                        if depth == 0 {
+                            return vec![(self.row, col), (row, x)];
+                        }
+                    }
+                }
+                _ => {}
+            }
+            // Step one char forward or back, across line ends.
+            if forward {
+                if x + 1 < self.line_len(row) {
+                    x += 1;
+                } else if row + 1 < self.lines.len() {
+                    row += 1;
+                    x = 0;
+                } else {
+                    return vec![(self.row, col)];
+                }
+            } else if x > 0 {
+                x -= 1;
+            } else if row > 0 {
+                row -= 1;
+                x = self.line_len(row).saturating_sub(1);
+            } else {
+                return vec![(self.row, col)];
+            }
+        }
     }
 
     /// Whether the newest hint is in the highlighted half of a blink.

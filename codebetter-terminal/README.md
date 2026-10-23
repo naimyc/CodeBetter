@@ -27,8 +27,8 @@ cargo test             # shell tests + every reference solution
 ```
 
 Requirements: Rust, `cargo tauri` (tauri-cli 2), webkit2gtk 4.1. To run
-solutions you need `rustc`, and optionally `python3`, `node` or `cc` for
-`.py`, `.js` or `.c` files.
+solutions you need `rustc`, and optionally `python3`, `node`, `cc` or a JDK
+(`javac` + `java`) for `.py`, `.js`, `.c` or `.java` files.
 
 ## The Rust course: CB Shop
 
@@ -47,6 +47,19 @@ shop, all in the same `main.rs`:
 | 8 | Schleifen | many items, one line each, with `for` |
 | 9 | Structs und Vec | a `struct Posten` collected in a `Vec` |
 | 10 | Fehler behandeln | `Option`/`Result`: unknown items and bad input never crash |
+
+## Java, Python and C
+
+Three shorter courses of 4 lessons each, built the same way:
+
+| Course | Program | Lessons |
+|--------|---------|---------|
+| `02_java_basics` (`Main.java`) | CB Kino: a cinema ticket desk | `println`, `String`/`int`, `Scanner` + `if`/`else`, `static` methods + `for` |
+| `03_python_basics` (`main.py`) | CB Noten: a grade calculator | `print`, f-strings, `input()` + `if`/`elif`, `def` + `for` + lists |
+| `04_c_basics` (`main.c`) | CB Thermo: Celsius to Fahrenheit | `printf`, `int` maths, `scanf` + `if`, functions + `for` |
+
+In Python, code checks treat `#` as the comment marker, so `//` (integer
+division) still counts as code.
 
 ## How it works
 
@@ -97,7 +110,7 @@ one lesson:
 
 ```toml
 [[task]]
-id = "02_my_course"
+id = "05_my_course"
 title = { en = "My Course", de = "Mein Kurs" }
 summary.en = "One line shown in the course list."
 summary.de = "Eine Zeile für die Kursliste."
@@ -133,6 +146,7 @@ expected = "25"
 
 Any text field can be a plain string (same in every language) or
 `{ en = "...", de = "..." }`. Put a reference solution for each lesson in
-`tasks/solutions/<id>/partN.rs`. `cargo test` then runs the whole course in
-every language. The catalog is compiled into the binary, so rebuild after
+`tasks/solutions/<id>/partN.<ext>`, with the extension of the starter file.
+`cargo test` in `cbeditor/` then runs every course in both languages (the
+solutions are German; its `TO_ENGLISH` table translates what they print). The catalog is compiled into the binary, so rebuild after
 editing it.

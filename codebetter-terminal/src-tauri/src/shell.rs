@@ -985,7 +985,8 @@ impl Shell {
         }
 
         let source = self.read_text(file).unwrap_or_default();
-        let missing = part.missing_requirements(&source);
+        let comment = if file.ends_with(".py") { "#" } else { "//" };
+        let missing = part.missing_requirements(&source, comment);
         if !missing.is_empty() {
             s += &tr!(
                 lang,

@@ -15,7 +15,7 @@ use crate::i18n::Lang;
 use crate::tr;
 
 const MAX_OUTPUT: u64 = 64 * 1024;
-const SUPPORTED: &str = ".rs .py .js .c";
+const SUPPORTED: &str = ".rs .py .js .c .java";
 
 pub struct Program {
     cmd: PathBuf,
@@ -93,7 +93,8 @@ pub fn prepare(source: &Path, lang: Lang) -> Result<Program, String> {
     // One binary per source file, so two tasks' main.rs never overwrite each other.
     let mut hasher = DefaultHasher::new();
     source.hash(&mut hasher);
-    let binary = build_dir.join(format!("{stem}-{:x}{EXE_SUFFIX}", hasher.finish()));
+    let hash = hasher.finish();
+    let binary = build_dir.join(format!("{stem}-{hash:x}{EXE_SUFFIX}"));
 
     let interpreted = |names: &[&str]| -> Result<Program, String> {
         let cmd = find_tool(names).ok_or_else(|| not_found(names[0], lang))?;
@@ -137,6 +138,32 @@ pub fn prepare(source: &Path, lang: Lang) -> Result<Program, String> {
             Ok(Program {
                 cmd: binary,
                 args: vec![],
+                dir,
+                compile_log,
+            })
+        }
+        "java" => {
+            // javac writes Main.class for `class Main` into its own directory.
+            let classes = build_dir.join(format!("{stem}-{hash:x}-classes"));
+            let _ = std::fs::remove_dir_all(&classes);
+            std::fs::create_dir_all(&classes).map_err(|e| e.to_string())?;
+            let args = vec![
+                "-encoding".into(),
+                "UTF-8".into(),
+                "-d".into(),
+                classes.clone().into(),
+                source.clone().into(),
+            ];
+            let compile_log = compile(&["javac"], args, &dir, lang)?;
+            let java = find_tool(&["java"]).ok_or_else(|| not_found("java", lang))?;
+            Ok(Program {
+                cmd: java,
+                args: vec![
+                    "-Dstdout.encoding=UTF-8".into(),
+                    "-cp".into(),
+                    classes.into(),
+                    stem.into(),
+                ],
                 dir,
                 compile_log,
             })

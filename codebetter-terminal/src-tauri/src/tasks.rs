@@ -52,12 +52,12 @@ pub struct Requirement {
 }
 
 impl Part {
-    /// Requirements the source doesn't meet. Comments don't count, and
-    /// runs of whitespace compare as one space.
-    pub fn missing_requirements(&self, source: &str) -> Vec<&Requirement> {
+    /// Requirements the source doesn't meet. Comments (from `comment` to
+    /// the line end) don't count, and runs of whitespace compare as one space.
+    pub fn missing_requirements(&self, source: &str, comment: &str) -> Vec<&Requirement> {
         let code: String = source
             .lines()
-            .map(|l| l.find("//").map_or(l, |i| &l[..i]))
+            .map(|l| l.find(comment).map_or(l, |i| &l[..i]))
             .collect::<Vec<_>>()
             .join(" ");
         let code = collapse_whitespace(&code);

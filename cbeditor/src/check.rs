@@ -165,7 +165,8 @@ pub fn check(
     }
 
     let code = std::fs::read_to_string(source).unwrap_or_default();
-    let missing = missing_requirements(requires, &code);
+    let python = source.extension().is_some_and(|e| e == "py");
+    let missing = missing_requirements(requires, &code, if python { "#" } else { "//" });
     if !missing.is_empty() {
         r.push((String::new(), TEXT));
         r.push((
@@ -184,12 +185,16 @@ pub fn check(
     (r, true)
 }
 
-/// Requirements the source doesn't meet. Comments don't count, and runs
-/// of whitespace compare as one space.
-fn missing_requirements<'a>(requires: &'a [Requirement], source: &str) -> Vec<&'a Requirement> {
+/// Requirements the source doesn't meet. Comments (from `comment` to the
+/// line end) don't count, and runs of whitespace compare as one space.
+fn missing_requirements<'a>(
+    requires: &'a [Requirement],
+    source: &str,
+    comment: &str,
+) -> Vec<&'a Requirement> {
     let code: String = source
         .lines()
-        .map(|l| l.find("//").map_or(l, |i| &l[..i]))
+        .map(|l| l.find(comment).map_or(l, |i| &l[..i]))
         .collect::<Vec<_>>()
         .join(" ");
     let code = collapse_whitespace(&code);
@@ -248,8 +253,14 @@ mod tests {
         };
         let reqs = [req("let mut "), req("match ")];
         let src = "fn main() {\n    let   mut x = 1; // match x\n}";
-        let missing = missing_requirements(&reqs, src);
+        let missing = missing_requirements(&reqs, src, "//");
         assert_eq!(missing.len(), 1);
         assert_eq!(missing[0].code, "match ");
+
+        // In Python `//` divides and `#` starts a comment.
+        let reqs = [req("// 2"), req("for ")];
+        let missing = missing_requirements(&reqs, "x = n // 2  # for each", "#");
+        assert_eq!(missing.len(), 1);
+        assert_eq!(missing[0].code, "for ");
     }
 }
