@@ -52,40 +52,60 @@ pub struct Requirement {
 }
 
 impl Part {
-    /// Requirements the source doesn't meet. Comments (from `comment` to
-    /// the line end) don't count, and runs of whitespace compare as one space.
+    /// Requirements the source doesn't meet. Code and requirement are
+    /// compared as tokens (see `tokens`), so spacing never matters, and
+    /// comments (`comment` to the line end, and `/* */` outside Python)
+    /// don't count.
     pub fn missing_requirements(&self, source: &str, comment: &str) -> Vec<&Requirement> {
-        let code: String = source
-            .lines()
-            .map(|l| l.find(comment).map_or(l, |i| &l[..i]))
-            .collect::<Vec<_>>()
-            .join(" ");
-        let code = collapse_whitespace(&code);
+        let code = strip_comments(source, comment);
+        let code = tokens(&code);
         self.requires
             .iter()
-            .filter(|r| !code.contains(&collapse_whitespace(&r.code)))
+            .filter(|r| {
+                let want = tokens(&r.code);
+                !want.is_empty() && !code.windows(want.len()).any(|w| w == want)
+            })
             .collect()
     }
 }
 
-fn collapse_whitespace(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    let mut space = false;
-    for c in s.chars() {
+/// Code as tokens: words (names, keywords, numbers) and every other char
+/// on its own. `int*p`, `int *p` and `int * p` are all `int` `*` `p`, and
+/// a word only matches whole: `for` is not in `format`.
+fn tokens(code: &str) -> Vec<&str> {
+    let is_word = |c: char| c.is_alphanumeric() || c == '_';
+    let mut out = Vec::new();
+    let mut chars = code.char_indices().peekable();
+    while let Some((start, c)) = chars.next() {
         if c.is_whitespace() {
-            space = true;
-        } else {
-            if space && !out.is_empty() {
-                out.push(' ');
-            }
-            space = false;
-            out.push(c);
+            continue;
         }
-    }
-    if space {
-        out.push(' ');
+        let mut end = start + c.len_utf8();
+        if is_word(c) {
+            while let Some(&(i, d)) = chars.peek() {
+                if !is_word(d) {
+                    break;
+                }
+                end = i + d.len_utf8();
+                chars.next();
+            }
+        }
+        out.push(&code[start..end]);
     }
     out
+}
+
+/// The code without comments; line breaks stay.
+fn strip_comments(source: &str, comment: &str) -> String {
+    let mut code = source.to_owned();
+    if comment == "//" {
+        while let Some(start) = code.find("/*") {
+            let end = code[start + 2..].find("*/").map_or(code.len(), |i| start + 2 + i + 2);
+            let breaks = code[start..end].matches('\n').count();
+            code.replace_range(start..end, &"\n".repeat(breaks));
+        }
+    }
+    code.lines().map(|l| l.find(comment).map_or(l, |i| &l[..i])).collect::<Vec<_>>().join("\n")
 }
 
 #[derive(Deserialize)]

@@ -273,13 +273,13 @@ impl Editor {
 }
 
 /// `text` centered in `width` columns.
-fn center(text: &str, width: usize) -> String {
+pub fn center(text: &str, width: usize) -> String {
     let pad = width.saturating_sub(text.chars().count()) / 2;
     format!("{}{text}", " ".repeat(pad))
 }
 
 /// Prints `text` cut or padded to exactly `width` columns.
-fn put(out: &mut impl Write, text: &str, width: usize, paint: Paint) -> io::Result<()> {
+pub fn put(out: &mut impl Write, text: &str, width: usize, paint: Paint) -> io::Result<()> {
     let text: String = text.chars().take(width).collect();
     let pad = width - text.chars().count();
     let weight = if paint.bold {
@@ -298,7 +298,7 @@ fn put(out: &mut impl Write, text: &str, width: usize, paint: Paint) -> io::Resu
 }
 
 /// Prints the spans, cut at `width`, and fills the rest with `fill`.
-fn put_line(out: &mut impl Write, spans: &[Span], width: usize, fill: Paint) -> io::Result<()> {
+pub fn put_line(out: &mut impl Write, spans: &[Span], width: usize, fill: Paint) -> io::Result<()> {
     let mut left = width;
     for (text, paint) in spans {
         let n = text.chars().count().min(left);

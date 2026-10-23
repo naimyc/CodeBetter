@@ -1,6 +1,6 @@
 //! Languages and translatable catalog text, matching the CodeBetter terminal app.
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize, Serializer};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Lang {
@@ -38,7 +38,7 @@ macro_rules! tr {
 }
 
 /// Catalog text: either one string for every language, or `{ en = "..", de = ".." }`.
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, Clone)]
 #[serde(untagged)]
 pub enum Text {
     #[default]
@@ -48,6 +48,22 @@ pub enum Text {
         en: String,
         de: String,
     },
+}
+
+/// Written back the way it was read; a missing text becomes "".
+impl Serialize for Text {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        struct Local<'a> {
+            en: &'a str,
+            de: &'a str,
+        }
+        match self {
+            Text::None => s.serialize_str(""),
+            Text::Same(text) => s.serialize_str(text),
+            Text::Local { en, de } => Local { en, de }.serialize(s),
+        }
+    }
 }
 
 impl Text {

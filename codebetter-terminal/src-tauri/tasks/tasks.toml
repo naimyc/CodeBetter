@@ -8,8 +8,9 @@
 # A test feeds `input` to the program's stdin and compares stdout with
 # `expected` (trailing whitespace and trailing empty lines are ignored).
 # Hidden tests don't reveal their input when they fail.
-# `require` checks the source code (comments ignored, whitespace collapsed),
-# so a lesson about `mut` can't be passed without using `mut`.
+# `require` checks the source code token by token (comments ignored, spacing
+# doesn't matter: "int *" matches `int*p`; words match whole: "for" isn't in
+# `format`), so a lesson about `mut` can't be passed without using `mut`.
 #
 # Text fields are either one string for all languages, or translated:
 #   title = { en = "Variables", de = "Variablen" }

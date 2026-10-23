@@ -5,7 +5,7 @@
 use std::path::Path;
 use std::time::Duration;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::i18n::{Lang, Text};
 use crate::runner;
@@ -14,20 +14,20 @@ use crate::tr;
 
 const TEST_TIMEOUT: Duration = Duration::from_secs(5);
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct TestCase {
     #[serde(default)]
-    input: Text,
-    expected: Text,
-    #[serde(default)]
-    hidden: bool,
+    pub input: Text,
+    pub expected: Text,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub hidden: bool,
 }
 
 /// Something the source code must contain, e.g. `let mut `.
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Requirement {
-    code: String,
-    message: Text,
+    pub code: String,
+    pub message: Text,
 }
 
 /// One line of the report.
@@ -185,43 +185,67 @@ pub fn check(
     (r, true)
 }
 
-/// Requirements the source doesn't meet. Comments (from `comment` to the
-/// line end) don't count, and runs of whitespace compare as one space.
+/// Requirements the source doesn't meet. Code and requirement are
+/// compared as tokens (see `tokens`), so spacing never matters, and
+/// comments (`comment` to the line end, and `/* */` outside Python) don't
+/// count.
 fn missing_requirements<'a>(
     requires: &'a [Requirement],
     source: &str,
     comment: &str,
 ) -> Vec<&'a Requirement> {
-    let code: String = source
-        .lines()
-        .map(|l| l.find(comment).map_or(l, |i| &l[..i]))
-        .collect::<Vec<_>>()
-        .join(" ");
-    let code = collapse_whitespace(&code);
+    let code = strip_comments(source, comment);
+    let code = tokens(&code);
     requires
         .iter()
-        .filter(|r| !code.contains(&collapse_whitespace(&r.code)))
+        .filter(|r| {
+            let want = tokens(&r.code);
+            !want.is_empty() && !code.windows(want.len()).any(|w| w == want)
+        })
         .collect()
 }
 
-fn collapse_whitespace(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    let mut space = false;
-    for c in s.chars() {
+/// Code as tokens: words (names, keywords, numbers) and every other char
+/// on its own. `int*p`, `int *p` and `int * p` are all `int` `*` `p`, and
+/// a word only matches whole: `for` is not in `format`.
+fn tokens(code: &str) -> Vec<&str> {
+    let is_word = |c: char| c.is_alphanumeric() || c == '_';
+    let mut out = Vec::new();
+    let mut chars = code.char_indices().peekable();
+    while let Some((start, c)) = chars.next() {
         if c.is_whitespace() {
-            space = true;
-        } else {
-            if space && !out.is_empty() {
-                out.push(' ');
-            }
-            space = false;
-            out.push(c);
+            continue;
         }
-    }
-    if space {
-        out.push(' ');
+        let mut end = start + c.len_utf8();
+        if is_word(c) {
+            while let Some(&(i, d)) = chars.peek()
+                && is_word(d)
+            {
+                end = i + d.len_utf8();
+                chars.next();
+            }
+        }
+        out.push(&code[start..end]);
     }
     out
+}
+
+/// The code without comments; line breaks stay.
+fn strip_comments(source: &str, comment: &str) -> String {
+    let mut code = source.to_owned();
+    if comment == "//" {
+        while let Some(start) = code.find("/*") {
+            let end = code[start + 2..]
+                .find("*/")
+                .map_or(code.len(), |i| start + 2 + i + 2);
+            let breaks = code[start..end].matches('\n').count();
+            code.replace_range(start..end, &"\n".repeat(breaks));
+        }
+    }
+    code.lines()
+        .map(|l| l.find(comment).map_or(l, |i| &l[..i]))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 fn push_block(r: &mut Vec<ReportLine>, text: &str, paint: Paint) {
@@ -256,6 +280,24 @@ mod tests {
         let missing = missing_requirements(&reqs, src, "//");
         assert_eq!(missing.len(), 1);
         assert_eq!(missing[0].code, "match ");
+
+        // Spacing around symbols doesn't matter: a pointer is a pointer.
+        let reqs = [req("int *"), req("int* p"), req("&x"), req("printf(")];
+        let src = "int main(void) { int x = 1; int*p = & x; printf (\"%d\", *p); }";
+        assert!(missing_requirements(&reqs, src, "//").is_empty());
+        let src = "int * p = &x; printf(\"%d\", *p);";
+        assert!(missing_requirements(&reqs, src, "//").is_empty());
+
+        // Words match whole, and block comments don't count.
+        let reqs = [req("for"), req("while ")];
+        let src = "printf(\"format\"); /* for\n while */ int fortune = 1;";
+        assert_eq!(missing_requirements(&reqs, src, "//").len(), 2);
+        assert!(missing_requirements(&reqs, "for (;;) { while (x) {} }", "//").is_empty());
+
+        // An f-string starts with the token f followed by a quote.
+        let reqs = [req("f\"")];
+        assert!(missing_requirements(&reqs, "print( f\"{x}\")", "#").is_empty());
+        assert_eq!(missing_requirements(&reqs, "print(\"x\")", "#").len(), 1);
 
         // In Python `//` divides and `#` starts a comment.
         let reqs = [req("// 2"), req("for ")];

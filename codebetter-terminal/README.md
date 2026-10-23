@@ -86,7 +86,9 @@ division) still counts as code.
   when they fail.
 * **Code checks.** After the output is right, `submit` checks that the
   code uses the lesson's concept (e.g. `let mut`, `match `, `struct `).
-  Comments don't count. Right output without the concept doesn't unlock the
+  Code and requirement are compared token by token, so spacing doesn't
+  matter (`int *` matches `int*p`) and words match whole (`for` isn't in
+  `format`). Comments don't count. Right output without the concept doesn't unlock the
   next lesson; you get a note saying what's missing.
 * **CBEditor** (`edit file`, also `nano`/`vim`/`vi`) shows the lesson, the
   exercise, the hints you've revealed and the test results in a panel to

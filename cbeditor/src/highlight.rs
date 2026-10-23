@@ -442,7 +442,9 @@ impl Syntax {
 }
 
 fn starts_with(chars: &[char], at: usize, pat: &str) -> bool {
-    (at..).zip(pat.chars()).all(|(i, p)| chars.get(i) == Some(&p))
+    (at..)
+        .zip(pat.chars())
+        .all(|(i, p)| chars.get(i) == Some(&p))
 }
 
 fn is_ident_start(c: char) -> bool {

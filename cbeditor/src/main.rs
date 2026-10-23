@@ -3,22 +3,29 @@
 //! the CBEditor in the CodeBetter terminal app: code on the left, the lesson
 //! on the right.
 //!
-//! Usage: cbeditor <file> [--task ID] [--part N] [--lang de|en]
+//! Usage: cbeditor [file] [--task ID] [--part N] [--lang de|en] [--dir DIR]
+//! Without a file it starts like the app: a short boot, the CodeBetter
+//! banner and the courses. The picked course gets its own directory in
+//! ~/Tasks.cb (or DIR), and the editor opens its starter file there.
 //! Keys: ^S save, ^X exit, ^Z/^Y undo/redo, ^K/^U cut/paste a line, F5
 //! check, F2 next hint, F1 toggle the panel, Tab/Shift+Tab indent. The mouse
 //! wheel scrolls whatever it is over; the panel also scrolls with
 //! Alt/Ctrl+Up/Down and Alt+PgUp/PgDn. Code is highlighted by file type.
 
+mod ai;
+mod catalog;
 mod check;
 mod draw;
 mod highlight;
 mod i18n;
 mod lesson;
+mod menu;
 mod runner;
 mod theme;
+mod workspace;
 
 use std::io::{self, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 use std::{env, fs};
 
@@ -34,6 +41,7 @@ use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use highlight::Syntax;
 use i18n::Lang;
 use lesson::Lesson;
+use menu::{Choice, Menu};
 
 const INDENT: &str = "    ";
 /// Lines per mouse wheel step.
@@ -89,6 +97,8 @@ struct Editor {
     status: String,
     lesson: Option<Lesson>,
     show_panel: bool,
+    /// The course directory whose progress a pass moves on.
+    progress_dir: Option<PathBuf>,
     /// First visible line of the panel.
     panel_top: usize,
     /// Screen column where the panel starts, `None` while it's hidden.
@@ -152,6 +162,7 @@ impl Editor {
             status,
             lesson,
             show_panel: true,
+            progress_dir: None,
             panel_top: 0,
             panel_x: None,
             flash_until: None,
@@ -567,6 +578,15 @@ impl Editor {
         draw(self)?;
         let lesson = self.lesson.as_mut().expect("checked above");
         if lesson.check(Path::new(&self.path)) {
+            if let Some(dir) = &self.progress_dir
+                && let Err(e) = workspace::save_progress(dir, lesson)
+            {
+                self.status = tr!(
+                    self.lang,
+                    "[ Progress not saved: {e} ]",
+                    "[ Fortschritt nicht gespeichert: {e} ]"
+                );
+            }
             self.panel_top = 0;
             self.flash_until = Some(Instant::now() + FLASH);
         } else {
@@ -733,42 +753,134 @@ fn run(editor: &mut Editor) -> io::Result<()> {
     }
 }
 
-/// Returns the file to edit, the lesson for the panel and the language.
-/// Without `--task`, the panel shows the first course.
-fn parse_args(
-    mut args: impl Iterator<Item = String>,
-) -> Result<(String, Option<Lesson>, Lang), String> {
-    let mut path = None;
-    let mut task = None;
-    let mut part = 1;
-    let mut lang = Lang::De;
+/// What to start with.
+struct Args {
+    path: Option<String>,
+    task: Option<String>,
+    part: Option<usize>,
+    lang: Lang,
+    root: PathBuf,
+}
+
+fn parse_args(mut args: impl Iterator<Item = String>) -> Result<Args, String> {
+    let mut a = Args {
+        path: None,
+        task: None,
+        part: None,
+        lang: Lang::De,
+        root: workspace::default_root(),
+    };
     while let Some(arg) = args.next() {
         let mut value = || args.next().ok_or(format!("{arg} needs a value"));
         match arg.as_str() {
-            "--task" => task = Some(value()?),
-            "--part" => part = value()?.parse().map_err(|_| "--part needs a number")?,
-            "--lang" => lang = Lang::parse(&value()?).ok_or("--lang is de or en")?,
+            "--task" => a.task = Some(value()?),
+            "--part" => a.part = Some(value()?.parse().map_err(|_| "--part needs a number")?),
+            "--lang" => a.lang = Lang::parse(&value()?).ok_or("--lang is de or en")?,
+            "--dir" => a.root = value()?.into(),
             _ if arg.starts_with("--") => return Err(format!("unknown option {arg}")),
-            _ if path.is_none() => path = Some(arg),
+            _ if a.path.is_none() => a.path = Some(arg),
             _ => return Err("only one file at a time".into()),
         }
     }
-    let path = path.ok_or("no file given")?;
-    let task = task.or_else(|| Lesson::course_for(&path));
-    let lesson = Lesson::load(task.as_deref(), part, lang)?;
-    Ok((path, Some(lesson), lang))
+    // Own courses (made with AI or imported) are next to the course directories.
+    catalog::use_custom_dir(a.root.join(".custom"));
+    if let Some(task) = &a.task {
+        Lesson::load(Some(task), 1, a.lang)?;
+    }
+    Ok(a)
+}
+
+/// The editor for a file given on the command line. Its lesson follows
+/// `--task`, or the file type; in a course directory it goes on where the
+/// progress says, unless `--part` says otherwise.
+fn editor_for_file(path: String, a: &Args) -> Result<Editor, String> {
+    let task = a.task.clone().or_else(|| Lesson::course_for(&path));
+    let dir = std::path::absolute(&path)
+        .ok()
+        .and_then(|p| p.parent().map(Path::to_owned));
+    let progress = task
+        .as_deref()
+        .zip(dir.as_deref())
+        .and_then(|(id, dir)| workspace::completed(dir, id));
+    let lesson = match (a.part, &task, progress) {
+        (None, Some(id), Some(done)) => Lesson::resume(id, done, a.lang)?,
+        (part, _, _) => Lesson::load(task.as_deref(), part.unwrap_or(1), a.lang)?,
+    };
+    let mut editor = Editor::open(path, Some(lesson), a.lang);
+    editor.progress_dir = dir.filter(|_| progress.is_some());
+    Ok(editor)
+}
+
+/// Creates the directory of `course` and opens its starter file at the
+/// next lesson.
+fn editor_for_course(course: &lesson::Course, root: &Path, lang: Lang) -> Result<Editor, String> {
+    let (file, new) = workspace::prepare(root, course, lang).map_err(|e| {
+        tr!(
+            lang,
+            "can't create {}: {e}",
+            "kann {} nicht anlegen: {e}",
+            workspace::pretty(&root.join(&course.id))
+        )
+    })?;
+    let dir = file
+        .parent()
+        .expect("is in the course directory")
+        .to_owned();
+    let done = workspace::completed(&dir, &course.id).unwrap_or(0);
+    let lesson = Lesson::resume(&course.id, done, lang)?;
+    // Rewritten on every start, so they follow the language.
+    workspace::save_progress(&dir, &lesson).map_err(|e| e.to_string())?;
+    let mut editor = Editor::open(file.to_string_lossy().into_owned(), Some(lesson), lang);
+    let shown = workspace::pretty(&dir);
+    editor.status = if new {
+        tr!(lang, "[ Created {shown} ]", "[ {shown} angelegt ]")
+    } else {
+        tr!(lang, "[ Opened {shown} ]", "[ {shown} geöffnet ]")
+    };
+    editor.progress_dir = Some(dir);
+    Ok(editor)
+}
+
+/// The start screen: boot once, then pick a course, edit it, and come
+/// back to the list when the editor is closed.
+fn start_screen(a: &Args) -> io::Result<()> {
+    let mut out = io::stdout();
+    let mut menu = Menu::new(a.root.clone(), a.lang);
+    menu.boot(&mut out)?;
+    loop {
+        let Choice::Open(course) = menu.pick(&mut out)? else {
+            return Ok(());
+        };
+        match editor_for_course(&course, &menu.root, menu.lang) {
+            Ok(mut editor) => {
+                run(&mut editor)?;
+                menu.status.clear();
+            }
+            Err(e) => menu.status = format!("[ {e} ]"),
+        }
+    }
 }
 
 fn main() -> io::Result<()> {
-    let (path, lesson, lang) = match parse_args(env::args().skip(1)) {
-        Ok(args) => args,
-        Err(e) => {
-            eprintln!("cbeditor: {e}");
-            eprintln!("usage: cbeditor <file> [--task ID] [--part N] [--lang de|en]");
-            std::process::exit(2);
-        }
+    let fail = |e: String| -> ! {
+        eprintln!("cbeditor: {e}");
+        eprintln!("usage: cbeditor [file] [--task ID] [--part N] [--lang de|en] [--dir DIR]");
+        std::process::exit(2);
     };
-    let mut editor = Editor::open(path, lesson, lang);
+    let args = parse_args(env::args().skip(1)).unwrap_or_else(|e| fail(e));
+    // A file opens directly, so does a course given with --task; otherwise
+    // the start screen lists the courses.
+    let mut editor = match (&args.path, &args.task) {
+        (Some(path), _) => Some(editor_for_file(path.clone(), &args).unwrap_or_else(|e| fail(e))),
+        (None, Some(task)) => {
+            let course = lesson::courses(args.lang)
+                .into_iter()
+                .find(|c| &c.id == task)
+                .expect("checked by parse_args");
+            Some(editor_for_course(&course, &args.root, args.lang).unwrap_or_else(|e| fail(e)))
+        }
+        (None, None) => None,
+    };
 
     terminal::enable_raw_mode()?;
     execute!(
@@ -779,7 +891,10 @@ fn main() -> io::Result<()> {
     )?;
     // Not every terminal can do this; pasting then still works key by key.
     let _ = execute!(io::stdout(), EnableBracketedPaste);
-    let result = run(&mut editor);
+    let result = match &mut editor {
+        Some(editor) => run(editor),
+        None => start_screen(&args),
+    };
     // Always restore the terminal, even if drawing failed.
     let mut out = io::stdout();
     let _ = execute!(

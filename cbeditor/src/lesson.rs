@@ -4,44 +4,55 @@
 
 use std::path::Path;
 
-use serde::Deserialize;
-
-use crate::check::{self, ReportLine, Requirement, TestCase};
-use crate::i18n::{Lang, Text};
+use crate::catalog::{self, Part, Task};
+use crate::check::{self, ReportLine};
+use crate::i18n::Lang;
 use crate::theme::{self, Paint};
 use crate::tr;
 
-/// Same catalog the Tauri app uses, compiled in.
-const CATALOG: &str = include_str!("../../codebetter-terminal/src-tauri/tasks/tasks.toml");
-
-#[derive(Deserialize)]
-struct Catalog {
-    #[serde(rename = "task")]
-    tasks: Vec<Task>,
+/// A course as the start screen lists it.
+pub struct Course {
+    pub id: String,
+    pub title: String,
+    pub summary: String,
+    pub starter_file: String,
+    pub starter_code: String,
+    pub lessons: usize,
+    /// Generated or imported, not built in.
+    pub custom: bool,
 }
 
-#[derive(Deserialize)]
-struct Task {
-    id: String,
-    title: Text,
-    /// The file the course is written in, like `main.rs`.
-    starter_file: String,
-    #[serde(rename = "part")]
-    parts: Vec<Part>,
+impl Course {
+    /// The programming language, from the starter file: `Main.java` is Java.
+    pub fn language(&self) -> &'static str {
+        match Path::new(&self.starter_file)
+            .extension()
+            .and_then(|e| e.to_str())
+        {
+            Some("rs") => "Rust",
+            Some("java") => "Java",
+            Some("py") => "Python",
+            Some("c") => "C",
+            Some("js") => "JavaScript",
+            _ => "?",
+        }
+    }
 }
 
-#[derive(Deserialize)]
-struct Part {
-    title: Text,
-    #[serde(default)]
-    lesson: Text,
-    description: Text,
-    #[serde(default)]
-    hints: Vec<Text>,
-    #[serde(default, rename = "require")]
-    requires: Vec<Requirement>,
-    #[serde(rename = "test")]
-    tests: Vec<TestCase>,
+/// Every course of the catalog, with its texts in `lang`.
+pub fn courses(lang: Lang) -> Vec<Course> {
+    catalog::all()
+        .into_iter()
+        .map(|t| Course {
+            title: t.title.get(lang).to_owned(),
+            summary: t.summary.get(lang).trim().to_owned(),
+            starter_code: t.starter_code.get(lang).trim_start().to_owned(),
+            lessons: t.parts.len(),
+            custom: t.custom,
+            starter_file: t.starter_file,
+            id: t.id,
+        })
+        .collect()
 }
 
 /// What appeared last and flashes in the panel.
@@ -69,11 +80,9 @@ impl Lesson {
     /// Loads lesson `part` (1-based) of course `task_id`, or of the first
     /// course when no id is given.
     pub fn load(task_id: Option<&str>, part: usize, lang: Lang) -> Result<Self, String> {
-        let catalog: Catalog =
-            toml::from_str(CATALOG).map_err(|e| format!("tasks.toml is invalid: {e}"))?;
         let task = match task_id {
-            Some(id) => catalog.tasks.into_iter().find(|t| t.id == id),
-            None => catalog.tasks.into_iter().next(),
+            Some(id) => catalog::find(id),
+            None => catalog::built_in().into_iter().next(),
         }
         .ok_or_else(|| format!("no course {}", task_id.unwrap_or("in the catalog")))?;
         if part == 0 || part > task.parts.len() {
@@ -90,14 +99,72 @@ impl Lesson {
         })
     }
 
+    /// Course `task_id` after `completed` passed lessons: the next lesson,
+    /// or the finished course.
+    pub fn resume(task_id: &str, completed: usize, lang: Lang) -> Result<Self, String> {
+        let mut lesson = Self::load(Some(task_id), 1, lang)?;
+        let total = lesson.task.parts.len();
+        lesson.part = completed.min(total - 1);
+        lesson.done = completed >= total;
+        Ok(lesson)
+    }
+
+    pub fn course_id(&self) -> &str {
+        &self.task.id
+    }
+
+    /// Lesson `index` (0-based) as a text file, like `part1.md` in the app.
+    pub fn lesson_file(&self, index: usize) -> String {
+        let lang = self.lang;
+        let part = &self.task.parts[index];
+        let underline = |s: &str, c: &str| format!("{s}\n{}", c.repeat(s.chars().count()));
+        let heading = tr!(
+            lang,
+            "LESSON {}/{} · {}",
+            "LEKTION {}/{} · {}",
+            index + 1,
+            self.task.parts.len(),
+            part.title.get(lang)
+        );
+        let mut s = underline(&heading, "=");
+        let theory = part.lesson.get(lang).trim_end();
+        if !theory.is_empty() {
+            let title = underline(lang.pick("LEARN", "LERNEN"), "-");
+            s += &format!("\n\n{title}\n{theory}");
+        }
+        let title = underline(lang.pick("YOUR TASK", "DEINE AUFGABE"), "-");
+        s += &format!("\n\n{title}\n{}\n", part.description.get(lang).trim_end());
+        let hidden = part.tests.iter().filter(|t| t.hidden).count();
+        s += &tr!(
+            lang,
+            "\nTESTS  {} ({} hidden)\n\nWhen you're done: F5 in CBEditor checks your solution.\n",
+            "\nTESTS  {} ({} versteckt)\n\nWenn du fertig bist: F5 im CBEditor prüft deine Lösung.\n",
+            part.tests.len(),
+            hidden
+        );
+        s
+    }
+
+    /// Lessons that can be read: the passed ones and the next.
+    pub fn unlocked(&self) -> usize {
+        (self.completed() + 1).min(self.task.parts.len())
+    }
+
+    /// How many lessons are passed.
+    pub fn completed(&self) -> usize {
+        if self.done {
+            self.task.parts.len()
+        } else {
+            self.part
+        }
+    }
+
     /// The first course written in the language of `path` (by extension),
     /// so `cbeditor Main.java` opens the Java course.
     pub fn course_for(path: &str) -> Option<String> {
         let ext = |p: &str| Path::new(p).extension().map(|e| e.to_ascii_lowercase());
         let want = ext(path)?;
-        let catalog: Catalog = toml::from_str(CATALOG).ok()?;
-        catalog
-            .tasks
+        catalog::all()
             .into_iter()
             .find(|t| ext(&t.starter_file).as_ref() == Some(&want))
             .map(|t| t.id)
@@ -324,7 +391,7 @@ fn hint_into(out: &mut Vec<Line>, n: usize, text: &str, width: usize, paint: Pai
 /// Word-wraps `text` to `width` columns. Lines that fit stay as they are;
 /// continuation lines keep the indentation of their source line, so code
 /// examples stay readable.
-fn wrap_into(out: &mut Vec<Line>, text: &str, width: usize, paint: Paint) {
+pub fn wrap_into(out: &mut Vec<Line>, text: &str, width: usize, paint: Paint) {
     let width = width.max(8);
     let mut push = |line: String| out.push(vec![(line, paint)]);
     if text.is_empty() {
@@ -453,8 +520,7 @@ mod tests {
             env!("CARGO_MANIFEST_DIR"),
             "/../codebetter-terminal/src-tauri/tasks/solutions"
         );
-        let catalog: Catalog = toml::from_str(CATALOG).unwrap();
-        for task in &catalog.tasks {
+        for task in &catalog::built_in() {
             let ext = Path::new(&task.starter_file)
                 .extension()
                 .unwrap()
@@ -526,8 +592,7 @@ mod tests {
 
     #[test]
     fn every_lesson_renders_in_both_languages() {
-        let catalog: Catalog = toml::from_str(CATALOG).unwrap();
-        for task in &catalog.tasks {
+        for task in &catalog::built_in() {
             for part in 1..=task.parts.len() {
                 for lang in [Lang::De, Lang::En] {
                     let mut lesson = Lesson::load(Some(&task.id), part, lang).unwrap();
